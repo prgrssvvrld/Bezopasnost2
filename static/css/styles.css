@@ -1,0 +1,111 @@
+body {
+    background-color: #080710;
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.background {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    background: url('https://images3.nplod.ru/gen_images_1/SmgUmPdp6WywuurjZYXXQoLtZREyBjlQ_sm.jpg');
+    background-size: cover;
+    filter: blur(8px);
+    opacity: 0.5;
+}
+
+.balloons {
+    background-image: url('https://example.com/balloons.png'); /* Замените на ссылку на изображение с шариками */
+    background-size: contain;
+    background-repeat: no-repeat;
+    opacity: 0.3;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+}
+
+.overlay-text {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Poppins', sans-serif;
+    font-size: 36px;
+    font-weight: 600;
+    color: white;
+    text-align: center;
+    opacity: 0.9;
+    filter: blur(1px);
+    z-index: -1;
+    white-space: nowrap;
+}
+
+form {
+    width: 350px;
+    background-color: rgba(255,255,255,0.13);
+    position: relative;
+    margin: 0 auto;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255,255,255,0.1);
+    box-shadow: 0 0 40px rgba(8,7,16,0.6);
+    padding: 40px 30px;
+}
+
+form h2 {
+    font-size: 28px;
+    color: #ffffff;
+    text-align: center;
+}
+
+label {
+    display: block;
+    margin-top: 25px;
+    font-size: 16px;
+    color: #ffffff;
+}
+
+input {
+    display: block;
+    height: 45px;
+    width: 100%;
+    background-color: rgba(255,255,255,0.07);
+    border-radius: 3px;
+    padding: 0 10px;
+    margin-top: 8px;
+    font-size: 14px;
+    color: #ffffff;
+}
+
+button {
+    margin-top: 30px;
+    width: 100%;
+    background-color: #ff6b00;
+    color: white;
+    padding: 10px 0;
+    font-size: 18px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+p {
+    color: #ffffff;
+    text-align: center;
+    margin-top: 10px;
+}
+
+a {
+    color: #ff6b00;
+    text-decoration: none;
+}

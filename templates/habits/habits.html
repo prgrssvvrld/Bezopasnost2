@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Мои привычки</title>
+</head>
+<body>
+    <h1>Мои привычки</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Добавить привычку</button>
+    </form>
+
+    <h2>Список привычек:</h2>
+    <ul>
+        {% for habit in habits %}
+            <li>{{ habit.name }} ; {{ habit.description }}</li>
+        {% endfor %}
+    </ul>
+
+    <p><a href="{% url 'logout' %}">Выйти</a></p>
+</body>
+</html>
