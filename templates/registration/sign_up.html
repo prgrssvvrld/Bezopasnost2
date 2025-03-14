@@ -117,12 +117,20 @@
         Измени свои привычки, и изменится твоя жизнь
     </div>
     <form method="post">
-        {% csrf_token %}
-        <h2>Регистрация</h2>
-        {{ form.as_p }}
+    {% csrf_token %}
+    <h2>Регистрация</h2>
 
-        <button type="submit">Зарегистрироваться</button>
-        <p>Уже есть аккаунт? <a href="{% url 'login' %}">Войдите</a>.</p>
-    </form>
+    <label for="id_username">Имя пользователя:</label>
+    <input type="text" name="username" id="id_username" required placeholder="Введите имя пользователя">
+
+    <label for="id_password1">Пароль:</label>
+    <input type="password" name="password1" id="id_password1" required placeholder="Введите пароль">
+
+    <label for="id_password2">Подтверждение пароля:</label>
+    <input type="password" name="password2" id="id_password2" required placeholder="Повторите пароль">
+
+    <button type="submit">Зарегистрироваться</button>
+    <p>Уже есть аккаунт? <a href="/accounts/login/">Войдите</a>.</p>
+</form>
 </body>
 </html>

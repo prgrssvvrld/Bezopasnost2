@@ -5,6 +5,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
     <style>
+        .password-container {
+            position: relative;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 0px;/* Расположение глазка право-лево */
+            top: 56px;/* Расположение глазка верх-низ */
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #ff6b00;
+        }
         body {
             background-color: #080710;
             font-family: 'Poppins', sans-serif;
@@ -119,9 +130,27 @@
     <form method="post">
         {% csrf_token %}
         <h2>Вход</h2>
-        {{ form.as_p }}
+        <label for="id_username">Имя пользователя:</label>
+        <input type="text" name="username" id="id_username" required>
+
+        <div class="password-container">
+            <label for="id_password">Пароль:</label>
+            <input type="password" name="password" id="id_password" required>
+            <span class="toggle-password" onclick="togglePassword()">👁️</span>
+        </div>
+
         <button type="submit">Войти</button>
         <p>Нет аккаунта? <a href="{% url 'sign_up' %}">Зарегистрируйтесь</a>.</p>
     </form>
+    <script>
+        function togglePassword() {
+            const passwordField = document.getElementById('id_password');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+            } else {
+                passwordField.type = 'password';
+            }
+        }
+    </script>
 </body>
 </html>
