@@ -81,10 +81,18 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'mssql',
+        'NAME': 'bez',
+        'HOST': 'localhost',
+        'PORT': '1433',
+        'OPTIONS': {
+            'driver': 'ODBC Driver 17 for SQL Server',  # ODBC 17
+            'TrustServerCertificate': 'yes',
+            'trusted_connection': 'yes',
+        },
     }
 }
+
 
 
 # Password validation
