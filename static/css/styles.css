@@ -109,3 +109,12 @@ a {
     color: #ff6b00;
     text-decoration: none;
 }
+.password-requirements {
+    margin-top: 10px;
+    color: #ffffff;
+    font-size: 14px;
+}
+.password-requirements ul {
+    margin: 5px 0;
+    padding-left: 20px;
+}

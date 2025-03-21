@@ -4,10 +4,14 @@ from django.contrib.auth.decorators import login_required
 from .models import Habit
 from .forms import HabitForm
 from django.contrib.auth import authenticate, login
+from .forms import CustomUserCreationForm
+from django.contrib.auth import logout
 from django.urls import reverse
 
+def custom_logout(request):
+    logout(request)
+    return redirect('/accounts/login/')
 def custom_login(request):
-
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -21,15 +25,14 @@ def custom_login(request):
 
 
 def signup(request):
-
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
             return redirect('habits')
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
     return render(request, 'registration/sign_up.html', {'form': form})
 
 
