@@ -18,7 +18,7 @@ def custom_login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('habits')
+            return redirect('dashboard')
         else:
             return render(request, 'registration/login.html', {'error': 'Неверные данные'})
     return render(request, 'registration/login.html')
@@ -37,7 +37,7 @@ def signup(request):
 
 
 @login_required
-def habits(request):
+def dashboard(request):
 
     if request.method == 'POST':
         form = HabitForm(request.POST)
@@ -45,9 +45,10 @@ def habits(request):
             habit = form.save(commit=False)
             habit.user = request.user
             habit.save()
-            return redirect('habits')
+            return redirect('dashboard')
     else:
         form = HabitForm()
 
     user_habits = Habit.objects.filter(user=request.user)
-    return render(request, 'habits/habits.html', {'form': form, 'habits': user_habits})
+    return render(request, 'habits/main_page.html', {'form': form, 'habits': user_habits})
+
