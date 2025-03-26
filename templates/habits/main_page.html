@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Bar</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap">
+    <style>
+        :root {
+            --borderRadius: 10px;
+            --spacer: 1rem;
+            --primary: #406ff3;
+            --text: #6a778e;
+            --linkHeight: calc(var(--spacer) * 3.5);
+            --timing: 250ms;
+            --transition: all var(--timing) ease;
+        }
+
+        body {
+            background: #eaeef6;
+            font-family: 'Open Sans', sans-serif;
+            margin: 0;
+        }
+
+        .navbar {
+            position: fixed;
+            top: calc(var(--spacer) * 2);
+            left: calc(var(--spacer) * 2);
+            background: #fff;
+            border-radius: var(--borderRadius);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.03);
+            width: calc(var(--linkHeight) * 0.8);
+            height: calc(100vh - (var(--spacer) * 4));
+            padding: var(--spacer) / 2 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Центрирование по горизонтали */
+        }
+
+        .navbar__menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .navbar__item {
+            position: relative;
+            width: 100%;
+        }
+
+        .navbar__link {
+            display: flex;
+            align-items: center; /* Вертикальное выравнивание */
+            justify-content: center; /* Горизонтальное выравнивание */
+            height: var(--linkHeight);
+            width: 100%;
+            color: var(--text);
+            text-decoration: none;
+            transition: var(--transition);
+            padding: 0; /* Убираем padding */
+        }
+
+        .navbar__link:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: var(--primary);
+        }
+
+        .navbar__link i {
+            display: inline-flex;
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <ul class="navbar__menu">
+        <li class="navbar__item">
+            <a href="#" class="navbar__link">
+                <i data-feather="home"></i>
+            </a>
+        </li>
+        <li class="navbar__item">
+            <a href="#" class="navbar__link">
+                <i data-feather="message-square"></i>
+            </a>
+        </li>
+        <li class="navbar__item">
+            <a href="#" class="navbar__link">
+                <i data-feather="users"></i>
+            </a>
+        </li>
+        <li class="navbar__item">
+            <a href="#" class="navbar__link">
+                <i data-feather="folder"></i>
+            </a>
+        </li>
+        <li class="navbar__item">
+            <a href="#" class="navbar__link">
+                <i data-feather="archive"></i>
+            </a>
+        </li>
+        <li class="navbar__item">
+            <a href="#" class="navbar__link">
+                <i data-feather="help-circle"></i>
+            </a>
+        </li>
+        <li class="navbar__item">
+            <a href="#" class="navbar__link">
+                <i data-feather="settings"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<script src="https://unpkg.com/feather-icons"></script>
+<script>
+    feather.replace()
+</script>
+
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>Мои привычки</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #ff6b00;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .habit-form {
+            margin-bottom: 20px;
+        }
+        .habit-form input, .habit-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .habit-form button {
+            background-color: #ff6b00;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .habit-list {
+            list-style: none;
+            padding: 0;
+        }
+        .habit-list li {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .logout-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #ff6b00;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">Проект СФУ</div>
+        <h1>Мои привычки</h1>
+    </div>
+    <div class="container">
+        <form method="post" class="habit-form">
+            {% csrf_token %}
+            <label for="id_name">Название привычки:</label>
+            <input type="text" name="name" id="id_name" required>
+            <label for="id_description">Описание:</label>
+            <textarea name="description" id="id_description"></textarea>
+            <button type="submit">Добавить привычку</button>
+        </form>
+
+        <h2>Список привычек:</h2>
+        <ul class="habit-list">
+            {% for habit in habits %}
+                <li>{{ habit.name }} ; {{ habit.description }}</li>
+            {% endfor %}
+        </ul>
+
+        <a href="{% url 'logout' %}" class="logout-link">Выйти</a>
+    </div>
+</body>
+</html>
