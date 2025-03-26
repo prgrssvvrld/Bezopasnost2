@@ -129,6 +129,7 @@
 <head>
     <title>Мои привычки</title>
     <style>
+
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f4f4f4;
@@ -141,6 +142,34 @@
             padding: 20px;
             text-align: center;
         }
+        .btn-edit {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    text-decoration: none;
+    font-size: 14px;
+    margin-left: 10px;
+}
+
+.btn-delete {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-left: 10px;
+}
+
+.habit-list li {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
         .header h1 {
             margin: 0;
             font-size: 24px;
@@ -208,12 +237,23 @@
             <label for="id_description">Описание:</label>
             <textarea name="description" id="id_description"></textarea>
             <button type="submit">Добавить привычку</button>
+            <button type="">Удалить привычку</button>
+            <button type="">Изменить привычку</button>
         </form>
 
         <h2>Список привычек:</h2>
         <ul class="habit-list">
             {% for habit in habits %}
-                <li>{{ habit.name }} ; {{ habit.description }}</li>
+                <li>
+                    {{ habit.name }} ; {{ habit.description }}
+                    <!-- Форма для редактирования -->
+                    <a href="{% url 'edit_habit' habit.id %}" class="btn-edit">Изменить</a>
+                    <!-- Форма для удаления -->
+                    <form method="post" action="{% url 'delete_habit' habit.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-delete" onclick="return confirm('Вы уверены?')">Удалить</button>
+                    </form>
+                </li>
             {% endfor %}
         </ul>
 

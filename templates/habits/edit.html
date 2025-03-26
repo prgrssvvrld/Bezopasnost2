@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>Редактировать привычку</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .habit-form p {
+            margin-bottom: 15px;
+        }
+        .habit-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+        .habit-form input[type="text"],
+        .habit-form textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .habit-form input[type="text"]:focus,
+        .habit-form textarea:focus {
+            border-color: #ff6b00;
+            outline: none;
+        }
+        .habit-form input[type="text"] {
+            height: 45px;
+        }
+        .habit-form textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn {
+            background-color: #ff6b00;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #e05e00;
+        }
+        .btn-cancel {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        .btn-cancel:hover {
+            background-color: #d0d0d0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Редактировать привычку</h2>
+        <form method="post" class="habit-form">
+            {% csrf_token %}
+            <p>
+                <label for="id_name">Название привычки</label>
+                <input type="text" name="name" id="id_name" value="{{ form.name.value|default:'' }}" required>
+            </p>
+            <p>
+                <label for="id_description">Описание привычки</label>
+                <textarea name="description" id="id_description">{{ form.description.value|default:'' }}</textarea>
+            </p>
+            <div class="btn-container">
+                <button type="submit" class="btn">Сохранить</button>
+                <a href="{% url 'dashboard' %}" class="btn btn-cancel">Отмена</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
