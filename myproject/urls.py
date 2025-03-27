@@ -29,6 +29,8 @@ urlpatterns = [
     path('accounts/signup/', views.signup, name='sign_up'),
     path('habits/', views.dashboard, name='habits'),
     path('logout/', custom_logout, name='logout'),
+
+    path('chart/', views.chart_view, name='chart'),
     path('', include('myapp.urls')),
 
     path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),

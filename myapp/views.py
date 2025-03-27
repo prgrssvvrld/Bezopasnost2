@@ -63,6 +63,9 @@ def signup(request):
         form = CustomUserCreationForm()
     return render(request, 'registration/sign_up.html', {'form': form})
 
+def chart_view(request):
+    user_habits = Habit.objects.filter(user=request.user)
+    return render(request, 'icons/chart.html', {'habits': user_habits})
 
 @login_required
 def dashboard(request):
