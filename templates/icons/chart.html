@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Трекер привычек</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: #ff6b00;
+            color: white;
+            padding: 1rem;
+        }
+
+        .habit-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px;
+        }
+
+        .add-habit {
+            font-size: 24px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .close {
+            color: red;
+            float: right;
+            font-size: 28px;
+            cursor: pointer;
+        }
+
+        .habit-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">Проект СФУ</div>
+        <h1>Трекер привычек</h1>
+    </header>
+
+    <main class="container">
+        <section class="habit-list">
+            <h2>Ваши привычки</h2>
+            <div class="habit-container">
+                <button class="add-habit" onclick="openModal()">+</button>
+            </div>
+            <ul class="habit-list"></ul>
+        </section>
+
+        <section class="habit-analysis">
+            <h2>Анализ привычек</h2>
+            <canvas id="habitChart"></canvas>
+        </section>
+    </main>
+
+    <div class="modal" id="habitModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Добавить привычку</h2>
+            <input type="text" id="habitName" placeholder="Название привычки" required>
+            <textarea id="habitDescription" placeholder="Описание"></textarea>
+            <button onclick="addHabit()">Добавить</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const modal = document.getElementById("habitModal");
+            const habitNameInput = document.getElementById("habitName");
+            const habitList = document.querySelector(".habit-list");
+            const ctx = document.getElementById("habitChart").getContext("2d");
+
+            // Пример списка привычек
+            const habits = [
+                { name: "Утренняя зарядка", completed: false },
+                { name: "Чтение 30 минут", completed: false },
+                { name: "Пить 2 литра воды", completed: false }
+            ];
+
+            // Функция рендеринга списка привычек
+            function renderHabits() {
+                habitList.innerHTML = "";
+                habits.forEach((habit, index) => {
+                    const habitItem = document.createElement("div");
+                    habitItem.classList.add("habit-item");
+                    habitItem.innerHTML = `
+                        <input type="checkbox" id="habit-${index}" ${habit.completed ? "checked" : ""}>
+                        <label for="habit-${index}">${habit.name}</label>
+                        <button class="toggle-fail" data-index="${index}" ${habit.completed ? "style='display: none;'" : ""}>❌</button>
+                    `;
+
+                    const checkbox = habitItem.querySelector("input");
+                    const failButton = habitItem.querySelector(".toggle-fail");
+
+                    checkbox.addEventListener("change", function () {
+                        habits[index].completed = this.checked;
+                        failButton.style.display = this.checked ? "none" : "inline-block";
+                        updateChart();
+                    });
+
+                    failButton.addEventListener("click", function () {
+                        habits[index].completed = false;
+                        updateChart();
+                        renderHabits();
+                    });
+
+                    habitList.appendChild(habitItem);
+                });
+            }
+
+            // Добавление новой привычки
+            window.addHabit = function () {
+                const habitName = habitNameInput.value.trim();
+                if (habitName) {
+                    habits.push({ name: habitName, completed: false });
+                    habitNameInput.value = "";
+                    closeModal();
+                    renderHabits();
+                }
+            };
+
+            // Открытие/закрытие модального окна
+            window.openModal = function () {
+                modal.style.display = "block";
+            };
+
+            window.closeModal = function () {
+                modal.style.display = "none";
+            };
+
+            window.onclick = function (event) {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            };
+
+            // Данные для графика с выполненными и невыполненными привычками
+            const habitData = {
+                labels: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
+                datasets: [
+                    {
+                        label: "Выполненные привычки",
+                        data: [3, 5, 2, 6, 4, 5, 0],
+                        backgroundColor: "rgba(75, 192, 192, 0.2)",
+                        borderColor: "rgba(75, 192, 192, 1)",
+                        borderWidth: 1
+                    },
+                    {
+                        label: "Невыполненные привычки",
+                        data: [2, 3, 4, 2, 5, 3, 0],
+                        backgroundColor: "rgba(255, 99, 132, 0.2)",
+                        borderColor: "rgba(255, 99, 132, 1)",
+                        borderWidth: 1
+                    }
+                ]
+            };
+
+            const habitChart = new Chart(ctx, {
+                type: "bar",
+                data: habitData,
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            function updateChart() {
+                const completedCount = habits.filter(h => h.completed).length;
+                const failedCount = habits.length - completedCount;
+                habitChart.data.datasets[0].data[6] = completedCount;
+                habitChart.data.datasets[1].data[6] = failedCount;
+                habitChart.update();
+            }
+
+            // Инициализация
+            renderHabits();
+        });
+    </script>
+</body>
+</html>
