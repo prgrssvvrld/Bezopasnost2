@@ -11,6 +11,8 @@ class CustomUser(AbstractUser):
     """
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
+    first_name = models.CharField(max_length=30, blank=True)
+    last_name = models.CharField(max_length=30, blank=True)
 
     groups = models.ManyToManyField(
         Group,

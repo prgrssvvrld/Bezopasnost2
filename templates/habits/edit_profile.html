@@ -1,0 +1,108 @@
+{% extends 'habits/base.html' %}
+
+{% block title %}Редактирование профиля{% endblock %}
+{% block header %}Редактирование профиля{% endblock %}
+
+{% block content %}
+<div class="edit-profile-container">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label>Текущее фото:</label>
+            <div class="current-photo-container">
+                {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" width="120" class="current-photo">
+                {% else %}
+                    <div class="no-photo">
+                        <i class="fas fa-user"></i>
+                        <p>Нет фото профиля</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="file-input-wrapper">
+                <label for="id_profile_picture" class="btn btn-secondary">
+                    <i class="fas fa-upload"></i> Выбрать новое фото
+                </label>
+                <input type="file" name="profile_picture" accept="image/*" id="id_profile_picture" style="display: none;">
+                <span id="file-name">Файл не выбран</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="id_first_name">Имя:</label>
+            <input type="text" name="first_name" value="{{ form.first_name.value|default:'' }}" id="id_first_name" class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label for="id_last_name">Фамилия:</label>
+            <input type="text" name="last_name" value="{{ form.last_name.value|default:'' }}" id="id_last_name" class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label for="id_email">Email:</label>
+            <input type="email" name="email" value="{{ form.email.value|default:'' }}" id="id_email" class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label for="id_bio">О себе:</label>
+            <textarea name="bio" id="id_bio" class="form-textarea" rows="4">{{ form.bio.value|default:'' }}</textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Сохранить изменения
+            </button>
+            <a href="{% url 'profile' %}" class="btn btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+
+<style>
+    .edit-profile-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .current-photo-container {
+        margin-bottom: 15px;
+    }
+
+    .current-photo {
+        border-radius: 50%;
+    }
+
+    .no-photo {
+        text-align: center;
+        color: #6c757d;
+    }
+
+    .no-photo i {
+        font-size: 60px;
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .file-input-wrapper {
+        margin-top: 10px;
+    }
+
+    #file-name {
+        margin-left: 10px;
+        color: var(--text-light);
+    }
+
+    .form-actions {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+    }
+</style>
+
+<script>
+    document.getElementById('id_profile_picture').addEventListener('change', function(e) {
+        const fileName = e.target.files[0] ? e.target.files[0].name : 'Файл не выбран';
+        document.getElementById('file-name').textContent = fileName;
+    });
+</script>
+{% endblock %}

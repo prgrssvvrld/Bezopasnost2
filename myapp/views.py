@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from .models import Habit
-from .forms import HabitForm
+from .forms import HabitForm, ProfileForm
 from django.contrib.auth import authenticate, login
 from .forms import CustomUserCreationForm
 from django.contrib.auth import logout
@@ -83,3 +83,27 @@ def dashboard(request):
     user_habits = Habit.objects.filter(user=request.user)
     return render(request, 'habits/main_page.html', {'form': form, 'habits': user_habits})
 
+
+@login_required
+def profile_view(request):
+    return render(request, 'habits/profile.html', {'user': request.user})
+
+
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            user = form.save()
+
+            if 'profile_picture' in request.FILES:
+                if user.profile_picture:
+                    user.profile_picture.delete()
+                user.profile_picture = request.FILES['profile_picture']
+                user.save()
+
+            return redirect('profile')
+    else:
+        form = ProfileForm(instance=request.user)
+
+    return render(request, 'habits/edit_profile.html', {'form': form})
