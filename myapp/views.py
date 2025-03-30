@@ -40,7 +40,7 @@ def delete_habit(request, habit_id):
     return redirect('dashboard')
 def custom_logout(request):
     logout(request)
-    return redirect('/')######
+    return redirect('/')
 def custom_login(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -65,6 +65,7 @@ def signup(request):
         form = CustomUserCreationForm()
     return render(request, 'registration/sign_up.html', {'form': form})
 
+@login_required
 def chart_view(request):
     user_habits = Habit.objects.filter(user=request.user)
     return render(request, 'icons/chart.html', {'habits': user_habits})
@@ -95,17 +96,23 @@ def profile_view(request):
 def edit_profile(request):
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=request.user)
+
+        if 'delete_photo' in request.POST:
+            if request.user.profile_picture:
+                request.user.profile_picture.delete()
+                request.user.profile_picture = None
+                request.user.save()
+            return redirect('profile')
+
         if form.is_valid():
             customuser = form.save()
 
             if 'profile_picture' in request.FILES:
                 if customuser.profile_picture:
-                    customuser.profile_picture.delete()
+                    customuser.profile_picture.delete()  # Удаляем старое фото, если оно есть
                 customuser.profile_picture = request.FILES['profile_picture']
                 customuser.save()
-
             return redirect('profile')
     else:
         form = ProfileForm(instance=request.user)
-
     return render(request, 'habits/edit_profile.html', {'form': form})

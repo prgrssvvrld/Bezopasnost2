@@ -45,26 +45,35 @@
             transition: var(--transition);
         }
 
-        /* User icon in top right corner */
+
         .user-icon {
             position: absolute;
             top: calc(var(--spacer) * 2);
             right: calc(var(--spacer) * 2);
             width: calc(var(--linkHeight) * 0.8);
             height: calc(var(--linkHeight) * 0.8);
-            background: var(--bg-nav);
             border-radius: 50%;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
+            background-color: var(--bg-nav);
             box-shadow: var(--shadow);
             z-index: 1001;
             transition: var(--transition);
         }
 
-        .user-icon i {
-            font-size: 1.3em;
-            color: var(--text);
+        .user-icon a {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+        .user-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         /* Collapsible navbar */
@@ -421,13 +430,13 @@
 <body>
     <!-- User icon in top right corner -->
     <div class="user-icon">
-    <a href="{% url 'profile' %}">
-        {% if request.user.profile_picture %}
-            <img src="{{ request.user.profile_picture.url }}" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
-        {% else %}
-            <i data-feather="user"></i>
-        {% endif %}
-    </a>
+        <a href="{% url 'profile' %}">
+            {% if request.user.profile_picture %}
+                <img src="{{ request.user.profile_picture.url }}" alt="Profile">
+            {% else %}
+                <i data-feather="user"></i>
+            {% endif %}
+        </a>
     </div>
 
     <!-- Collapsible navbar -->
@@ -539,7 +548,7 @@
         const savedTheme = localStorage.getItem('theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-        
+
 
         themeToggle.addEventListener('click', () => {
             body.classList.toggle('dark-mode');
