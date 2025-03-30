@@ -6,6 +6,8 @@ from .forms import HabitForm, ProfileForm
 from django.contrib.auth import authenticate, login
 from .forms import CustomUserCreationForm
 from django.contrib.auth import logout
+
+
 from django.urls import reverse
 @login_required
 def add_habit(request):
@@ -38,7 +40,7 @@ def delete_habit(request, habit_id):
     return redirect('dashboard')
 def custom_logout(request):
     logout(request)
-    return redirect('/accounts/login/')
+    return redirect('/')######
 def custom_login(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -94,13 +96,13 @@ def edit_profile(request):
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
-            user = form.save()
+            customuser = form.save()
 
             if 'profile_picture' in request.FILES:
-                if user.profile_picture:
-                    user.profile_picture.delete()
-                user.profile_picture = request.FILES['profile_picture']
-                user.save()
+                if customuser.profile_picture:
+                    customuser.profile_picture.delete()
+                customuser.profile_picture = request.FILES['profile_picture']
+                customuser.save()
 
             return redirect('profile')
     else:

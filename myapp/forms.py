@@ -1,21 +1,22 @@
 from django import forms
-from .models import Habit, CustomUser
+from .models import Habit, CustomUser  # Убедитесь, что вы импортируете вашу кастомную модель
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
 
 class HabitForm(forms.ModelForm):
     class Meta:
         model = Habit
         fields = ['name', 'description']
+
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True, label="Электронная почта")
 
     class Meta:
-        model = User
+        model = CustomUser  # Используйте вашу кастомную модель
         fields = ['username', 'email', 'password1', 'password2']
+
 class ProfileForm(forms.ModelForm):
     class Meta:
-        model = CustomUser
+        model = CustomUser  # Используйте вашу кастомную модель
         fields = ['first_name', 'last_name', 'email', 'bio', 'profile_picture']
         widgets = {
             'profile_picture': forms.FileInput(attrs={'accept': 'image/*'}),
