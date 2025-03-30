@@ -1,3 +1,23 @@
+.password-requirements {
+    margin-top: 10px;
+    color: #ffffff; /* Белый цвет текста */
+    font-size: 14px;
+}
+.password-requirements ul {
+    margin: 5px 0;
+    padding-left: 20px;
+}
+.password-container {
+   position: relative;
+}
+.toggle-password {
+    position: absolute;
+    right: 0px; /* Расположение глазка справа */
+    top: 70%; /* Центрирование по вертикали */
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #ff6b00;
+}
 body {
     background-color: #080710;
     font-family: 'Poppins', sans-serif;
@@ -8,7 +28,6 @@ body {
     overflow: hidden;
     position: relative;
 }
-
 .background {
     width: 100%;
     height: 100%;
@@ -16,39 +35,37 @@ body {
     top: 0;
     left: 0;
     z-index: -1;
-    background: url('https://images3.nplod.ru/gen_images_1/SmgUmPdp6WywuurjZYXXQoLtZREyBjlQ_sm.jpg');
+    background: url('https://cdn-om.cdnpk.net/users/193/193378408/uploads/59e03966-660c-4ddf-a748-3307ef3600be/59e03966-660c-4ddf-a748-3307ef3600be-thumb.jpg?token=exp=1743088253~hmac=ab85327e3c00472c6ab4d3c0fe962e89');
     background-size: cover;
     filter: blur(8px);
     opacity: 0.5;
 }
-
 .balloons {
     background-image: url('https://example.com/balloons.png'); /* Замените на ссылку на изображение с шариками */
     background-size: contain;
     background-repeat: no-repeat;
-    opacity: 0.3;
+    opacity: 0.3; /* Полупрозрачность для фона с шариками */
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -2;
+    z-index: -2; /* Чтобы фон с шариками был ниже прочего контента */
 }
-
 .overlay-text {
     position: absolute;
-    top: 50px;
+    top: 50px; /* Увеличенный отступ от верхней части */
     left: 50%;
     transform: translateX(-50%);
-    font-family: 'Poppins', sans-serif;
-    font-size: 36px;
-    font-weight: 600;
+    font-family: 'Roboto', sans-serif;
+    font-size: 36px; /* Увеличенный размер шрифта */
+    font-weight: 600; /* Более жирный шрифт */
     color: white;
     text-align: center;
-    opacity: 0.9;
-    filter: blur(1px);
-    z-index: -1;
-    white-space: nowrap;
+    opacity: 0.9; /* Меньшая мутность */
+    filter: blur(1px); /* Уменьшенное размытие текста */
+    z-index: -1; /* Чтобы текст был за фоном */
+    white-space: nowrap; /* Одна строка */
 }
 
 form {
@@ -62,20 +79,17 @@ form {
     box-shadow: 0 0 40px rgba(8,7,16,0.6);
     padding: 40px 30px;
 }
-
 form h2 {
     font-size: 28px;
     color: #ffffff;
     text-align: center;
 }
-
 label {
     display: block;
     margin-top: 25px;
     font-size: 16px;
     color: #ffffff;
 }
-
 input {
     display: block;
     height: 45px;
@@ -87,7 +101,6 @@ input {
     font-size: 14px;
     color: #ffffff;
 }
-
 button {
     margin-top: 30px;
     width: 100%;
@@ -98,23 +111,12 @@ button {
     border-radius: 5px;
     cursor: pointer;
 }
-
 p {
     color: #ffffff;
     text-align: center;
     margin-top: 10px;
 }
-
 a {
     color: #ff6b00;
     text-decoration: none;
-}
-.password-requirements {
-    margin-top: 10px;
-    color: #ffffff;
-    font-size: 14px;
-}
-.password-requirements ul {
-    margin: 5px 0;
-    padding-left: 20px;
 }

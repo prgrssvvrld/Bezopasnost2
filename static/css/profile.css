@@ -1,0 +1,95 @@
+ .profile-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .profile-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .profile-picture {
+        width: calc(var(--linkHeight) * 2);
+        height: calc(var(--linkHeight) * 2);
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 2rem;
+        background-color: var(--bg-nav);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow);
+    }
+
+    .profile-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .default-profile-img {
+        font-size: 3rem;
+        color: #ccc;
+    }
+    .user-icon {
+            position: absolute;
+            top: calc(var(--spacer) * 2);
+            right: calc(var(--spacer) * 2);
+            width: calc(var(--linkHeight) * 0.8);
+            height: calc(var(--linkHeight) * 0.8);
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-nav);
+            box-shadow: var(--shadow);
+            z-index: 1001;
+            transition: var(--transition);
+        }
+
+        .user-icon a {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .profile-info h2 {
+        margin: 0;
+        font-size: 1.8rem;
+    }
+
+    .bio {
+        color: var(--text-light);
+        margin-top: 5px;
+    }
+
+    .profile-details {
+        background-color: var(--bg-secondary);
+        padding: 20px;
+        border-radius: var(--borderRadius);
+        margin-bottom: 30px;
+    }
+
+    .detail-item {
+        margin-bottom: 10px;
+        display: flex;
+    }
+
+    .detail-label {
+        font-weight: 500;
+        min-width: 150px;
+    }
+
+    .text-muted {
+        color: #6c757d;
+    }

@@ -4,221 +4,234 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Трекер привычек</title>
+    {% load static %}  <!-- Загрузка тегов статических файлов -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/charts.css' %}">  <!-- Подключение CSS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-
-        header {
-            background: #ff6b00;
-            color: white;
-            padding: 1rem;
-        }
-
-        .habit-container {
-            display: flex;
-            justify-content: center;
-            margin: 20px;
-        }
-
-        .add-habit {
-            font-size: 24px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: none;
-            background: #4CAF50;
-            color: white;
-            cursor: pointer;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 15% auto;
-            padding: 20px;
-            border-radius: 10px;
-            width: 300px;
-            text-align: center;
-        }
-
-        .close {
-            color: red;
-            float: right;
-            font-size: 28px;
-            cursor: pointer;
-        }
-
-        .habit-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 10px 0;
-        }
-    </style>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <header class="header">
-        <div class="logo">Проект СФУ</div>
-        <h1>Трекер привычек</h1>
-    </header>
+    <!-- User icon in top right corner -->
+    <div class="user-icon">
+        <a href="profile.html">
+            <i data-feather="user"></i>
+        </a>
+    </div>
 
-    <main class="container">
-        <section class="habit-list">
-            <h2>Ваши привычки</h2>
-            <div class="habit-container">
-                <button class="add-habit" onclick="openModal()">+</button>
-            </div>
-            <ul class="habit-list"></ul>
-        </section>
+    <!-- Collapsible navbar -->
+    <nav class="navbar">
+        <ul class="navbar__menu">
+            <li class="navbar__item">
+                <a href="#" class="navbar__link">
+                    <i data-feather="home"></i>
+                </a>
+            </li>
+            <li class="navbar__item">
+                <a href="#" class="navbar__link">
+                    <i data-feather="calendar"></i>
+                </a>
+            </li>
+            <li class="navbar__item">
+                <a href="#" class="navbar__link">
+                    <i data-feather="bar-chart-2"></i>
+                </a>
+            </li>
+            <li class="navbar__item">
+                <a href="#" class="navbar__link">
+                    <i data-feather="help-circle"></i>
+                </a>
+            </li>
+            <li class="navbar__item">
+                <a href="#" class="navbar__link">
+                    <i data-feather="settings"></i>
+                </a>
+            </li>
+            <li class="navbar__item">
+                <a href="#" class="navbar__link" id="theme-toggle">
+                    <i data-feather="moon"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
 
-        <section class="habit-analysis">
-            <h2>Анализ привычек</h2>
-            <canvas id="habitChart"></canvas>
-        </section>
-    </main>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">Проект СФУ</div>
+            <h1>Трекер привычек</h1>
+        </div>
+    </div>
 
+    <div class="container">
+        <div class="habit-tracker">
+            <section class="habit-list-section">
+                <h2>Мои привычки</h2>
+                <button class="add-habit-btn" onclick="openModal()">
+                    <i class="fas fa-plus"></i>
+                </button>
+
+                <div class="habits-container">
+                    <div class="habit-item">
+                        <input type="checkbox" class="habit-checkbox" id="habit1">
+                        <label for="habit1" class="habit-name">Утренняя зарядка</label>
+                    </div>
+                    <div class="habit-item">
+                        <input type="checkbox" class="habit-checkbox" id="habit2">
+                        <label for="habit2" class="habit-name">Чтение 30 минут</label>
+                    </div>
+                    <div class="habit-item">
+                        <input type="checkbox" class="habit-checkbox" id="habit3">
+                        <label for="habit3" class="habit-name">Пить 2 литра воды</label>
+                    </div>
+                </div>
+            </section>
+
+            <section class="chart-section">
+                <h2>Прогресс за неделю</h2>
+                <div class="chart-container">
+                    <canvas id="habitChart"></canvas>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Add Habit Modal -->
     <div class="modal" id="habitModal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
             <h2>Добавить привычку</h2>
-            <input type="text" id="habitName" placeholder="Название привычки" required>
-            <textarea id="habitDescription" placeholder="Описание"></textarea>
-            <button onclick="addHabit()">Добавить</button>
+            <div class="form-group">
+                <input type="text" id="habitName" class="form-input" placeholder="Название привычки">
+            </div>
+            <button class="btn btn-primary" onclick="addHabit()">
+                <i class="fas fa-plus"></i> Добавить
+            </button>
         </div>
     </div>
 
+    <script src="https://unpkg.com/feather-icons"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const modal = document.getElementById("habitModal");
-            const habitNameInput = document.getElementById("habitName");
-            const habitList = document.querySelector(".habit-list");
-            const ctx = document.getElementById("habitChart").getContext("2d");
+        // Initialize feather icons
+        feather.replace();
 
-            // Пример списка привычек
-            const habits = [
-                { name: "Утренняя зарядка", completed: false },
-                { name: "Чтение 30 минут", completed: false },
-                { name: "Пить 2 литра воды", completed: false }
-            ];
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
 
-            // Функция рендеринга списка привычек
-            function renderHabits() {
-                habitList.innerHTML = "";
-                habits.forEach((habit, index) => {
-                    const habitItem = document.createElement("div");
-                    habitItem.classList.add("habit-item");
-                    habitItem.innerHTML = `
-                        <input type="checkbox" id="habit-${index}" ${habit.completed ? "checked" : ""}>
-                        <label for="habit-${index}">${habit.name}</label>
-                        <button class="toggle-fail" data-index="${index}" ${habit.completed ? "style='display: none;'" : ""}>❌</button>
-                    `;
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-                    const checkbox = habitItem.querySelector("input");
-                    const failButton = habitItem.querySelector(".toggle-fail");
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            body.classList.add('dark-mode');
+            updateMoonIcon(true);
+        }
 
-                    checkbox.addEventListener("change", function () {
-                        habits[index].completed = this.checked;
-                        failButton.style.display = this.checked ? "none" : "inline-block";
-                        updateChart();
-                    });
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            const isDark = body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateMoonIcon(isDark);
+            updateChartTheme(isDark);
+        });
 
-                    failButton.addEventListener("click", function () {
-                        habits[index].completed = false;
-                        updateChart();
-                        renderHabits();
-                    });
-
-                    habitList.appendChild(habitItem);
-                });
+        function updateMoonIcon(isDark) {
+            const moonIcon = themeToggle.querySelector('i');
+            if (isDark) {
+                moonIcon.setAttribute('data-feather', 'sun');
+            } else {
+                moonIcon.setAttribute('data-feather', 'moon');
             }
+            feather.replace();
+        }
 
-            // Добавление новой привычки
-            window.addHabit = function () {
-                const habitName = habitNameInput.value.trim();
-                if (habitName) {
-                    habits.push({ name: habitName, completed: false });
-                    habitNameInput.value = "";
-                    closeModal();
-                    renderHabits();
-                }
-            };
+        function updateChartTheme(isDark) {
+            Chart.defaults.color = isDark ? '#cbd5e0' : '#4a5568';
+            Chart.defaults.borderColor = isDark ? 'rgba(203, 213, 224, 0.1)' : 'rgba(74, 85, 104, 0.1)';
 
-            // Открытие/закрытие модального окна
-            window.openModal = function () {
-                modal.style.display = "block";
-            };
+            if (window.habitChart) {
+                window.habitChart.update();
+            }
+        }
 
-            window.closeModal = function () {
-                modal.style.display = "none";
-            };
+        // Modal functions
+        function openModal() {
+            document.getElementById('habitModal').style.display = 'block';
+        }
 
-            window.onclick = function (event) {
-                if (event.target === modal) {
-                    closeModal();
-                }
-            };
+        function closeModal() {
+            document.getElementById('habitModal').style.display = 'none';
+        }
 
-            // Данные для графика с выполненными и невыполненными привычками
-            const habitData = {
-                labels: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
-                datasets: [
-                    {
-                        label: "Выполненные привычки",
-                        data: [3, 5, 2, 6, 4, 5, 0],
-                        backgroundColor: "rgba(75, 192, 192, 0.2)",
-                        borderColor: "rgba(75, 192, 192, 1)",
-                        borderWidth: 1
-                    },
-                    {
-                        label: "Невыполненные привычки",
-                        data: [2, 3, 4, 2, 5, 3, 0],
-                        backgroundColor: "rgba(255, 99, 132, 0.2)",
-                        borderColor: "rgba(255, 99, 132, 1)",
-                        borderWidth: 1
+        function addHabit() {
+            const habitName = document.getElementById('habitName').value.trim();
+            if (habitName) {
+                const habitsContainer = document.querySelector('.habits-container');
+                const newHabitId = 'habit' + (habitsContainer.children.length + 1);
+
+                const newHabit = document.createElement('div');
+                newHabit.className = 'habit-item';
+                newHabit.innerHTML = `
+                    <input type="checkbox" class="habit-checkbox" id="${newHabitId}">
+                    <label for="${newHabitId}" class="habit-name">${habitName}</label>
+                `;
+
+                habitsContainer.appendChild(newHabit);
+                document.getElementById('habitName').value = '';
+                closeModal();
+                updateChart();
+            }
+        }
+
+        // Initialize chart
+        const ctx = document.getElementById('habitChart').getContext('2d');
+        window.habitChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+                datasets: [{
+                    label: 'Выполнено',
+                    data: [3, 2, 4, 5, 3, 6, 2],
+                    backgroundColor: 'rgba(64, 111, 243, 0.7)',
+                    borderColor: 'rgba(64, 111, 243, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
                     }
-                ]
-            };
-
-            const habitChart = new Chart(ctx, {
-                type: "bar",
-                data: habitData,
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
                         }
                     }
                 }
-            });
-
-            function updateChart() {
-                const completedCount = habits.filter(h => h.completed).length;
-                const failedCount = habits.length - completedCount;
-                habitChart.data.datasets[0].data[6] = completedCount;
-                habitChart.data.datasets[1].data[6] = failedCount;
-                habitChart.update();
             }
-
-            // Инициализация
-            renderHabits();
         });
+
+        function updateChart() {
+            // Here you would update the chart data based on habits completion
+            // For now just randomize data for demonstration
+            const newData = window.habitChart.data.datasets[0].data.map(() =>
+                Math.floor(Math.random() * 5) + 1
+            );
+            window.habitChart.data.datasets[0].data = newData;
+            window.habitChart.update();
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('habitModal')) {
+                closeModal();
+            }
+        }
     </script>
 </body>
 </html>
