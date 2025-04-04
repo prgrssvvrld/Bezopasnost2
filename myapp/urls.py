@@ -12,4 +12,6 @@ urlpatterns = [
     path('dashboard/chart/', views.chart_view, name='chart'),
     path('profile/', views.profile_view, name='profile'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
+    path('habits/<int:habit_id>/toggle/', views.toggle_habit_completion, name='toggle_habit_completion'),
+    path('faq/', views.faq_view, name='faq'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

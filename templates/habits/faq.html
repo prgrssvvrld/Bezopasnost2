@@ -1,0 +1,23 @@
+{% extends 'habits/base.html' %}
+
+{% block content %}
+<div class="header">
+    <div class="header-content">
+        <h1>Часто задаваемые вопросы</h1>
+    </div>
+</div>
+
+<div class="container faq-container">
+    {% for item in faq_items %}
+    <div class="faq-item">
+        <div class="faq-question">
+            <h3>{{ item.question }}</h3>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+            <p>{{ item.answer }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

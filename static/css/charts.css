@@ -15,7 +15,59 @@
             --accent: #ff6b00;
             --accent-hover: #e05d00;
         }
+.habit-category {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    margin-right: 8px;
+}
 
+.category-health { background-color: #FFEBEE; color: #C62828; }
+.category-sport { background-color: #E8F5E9; color: #2E7D32; }
+.category-study { background-color: #E3F2FD; color: #1565C0; }
+.category-work { background-color: #FFF8E1; color: #FF8F00; }
+.category-other { background-color: #F3E5F5; color: #6A1B9A; }
+/* Category filter styles */
+.category-filter {
+    margin-bottom: 2rem;
+}
+
+.category-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.category-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: var(--borderRadius);
+    background-color: var(--bg-secondary);
+    color: var(--text);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.category-btn:hover {
+    background-color: var(--primary);
+    color: white;
+}
+
+.category-btn.active {
+    background-color: var(--accent);
+    color: white;
+}
+
+/* Chart containers */
+.chart-section, .completion-section {
+    margin-bottom: 3rem;
+}
+
+.chart-container {
+    height: 300px;
+    margin-top: 1rem;
+}
         /* Dark theme variables */
         .dark-mode {
             --bg: #1a202c;

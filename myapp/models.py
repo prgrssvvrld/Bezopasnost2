@@ -41,10 +41,21 @@ class CustomUser(AbstractUser):
 
 
 class Habit(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Исправлена связь с пользователем
-    name = models.CharField(max_length=100)  # Название привычки
-    description = models.TextField(blank=True)  # Описание привычки
-    created_at = models.DateTimeField(auto_now_add=True)  # Дата создания
+    CATEGORY_CHOICES = [
+        ('health', 'Здоровье'),
+        ('sport', 'Спорт'),
+        ('study', 'Учеба'),
+        ('work', 'Работа'),
+        ('other', 'Другое'),
+    ]
 
-    def __str__(self):  # Corrected to __str__
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='health')
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed = models.BooleanField(default=False)
+    completion_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
         return self.name

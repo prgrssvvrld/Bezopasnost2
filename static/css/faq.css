@@ -1,0 +1,63 @@
+/* FAQ Styles */
+.faq-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.faq-item {
+    margin-bottom: 15px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background: #fff;
+}
+
+.faq-question {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    background: #f8f9fa;
+}
+
+.faq-question h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.faq-answer {
+    padding: 0 20px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.faq-answer.active {
+    padding: 20px;
+    max-height: 300px;
+}
+
+.faq-answer p {
+    margin: 0;
+    line-height: 1.6;
+    color: #555;
+}
+
+/* Habit completion styles */
+.habit-item.completed {
+    opacity: 0.7;
+    background-color: #f0fff0;
+}
+
+.habit-checkbox {
+    margin-right: 10px;
+}
+
+.badge-health { background-color: #ffebee; color: #c62828; }
+.badge-sport { background-color: #e8f5e9; color: #2e7d32; }
+.badge-study { background-color: #e3f2fd; color: #1565c0; }
+.badge-work { background-color: #fff8e1; color: #ff8f00; }
+.badge-other { background-color: #f3e5f5; color: #6a1b9a; }
