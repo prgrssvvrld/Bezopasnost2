@@ -6,7 +6,8 @@
         <h1>Часто задаваемые вопросы</h1>
     </div>
 </div>
-
+{% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/faq.css' %}">
 <div class="container faq-container">
     {% for item in faq_items %}
     <div class="faq-item">
@@ -20,4 +21,60 @@
     </div>
     {% endfor %}
 </div>
+<script>
+    document.querySelectorAll('.faq-question').forEach(item => {
+        item.addEventListener('click', () => {
+            const answer = item.nextElementSibling;
+            answer.classList.toggle('active'); // Переключаем класс active
+        });
+    });
+</script>
 {% endblock %}
+.user-icon a {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+         @media (max-width: 768px) {
+            .habit-tracker {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                margin-left: 1rem;
+                margin-right: 1rem;
+            }
+
+            .navbar {
+                width: calc(var(--linkHeight) * 0.8);
+                height: calc(var(--linkHeight) * 0.8);
+                position: fixed;
+                bottom: calc(var(--spacer) * 2);
+                left: 50%;
+                transform: translateX(-50%);
+                top: auto;
+            }
+
+            .navbar:hover {
+                width: 90%;
+                height: auto;
+                border-radius: var(--borderRadius);
+            }
+
+            .user-icon {
+                top: calc(var(--spacer) * 1.5);
+                right: calc(var(--spacer) * 1.5);
+            }
+
+            .header-content {
+                padding-top: calc(var(--linkHeight) * 0.8 + var(--spacer) * 2);
+            }
+        }

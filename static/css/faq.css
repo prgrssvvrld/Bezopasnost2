@@ -61,3 +61,34 @@
 .badge-study { background-color: #e3f2fd; color: #1565c0; }
 .badge-work { background-color: #fff8e1; color: #ff8f00; }
 .badge-other { background-color: #f3e5f5; color: #6a1b9a; }
+
+.user-icon {
+            position: absolute;
+            top: calc(var(--spacer) * 2);
+            right: calc(var(--spacer) * 2);
+            width: calc(var(--linkHeight) * 0.8);
+            height: calc(var(--linkHeight) * 0.8);
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-nav);
+            box-shadow: var(--shadow);
+            z-index: 1001;
+            transition: var(--transition);
+        }
+
+        .user-icon a {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
