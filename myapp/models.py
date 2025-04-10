@@ -40,22 +40,28 @@ class CustomUser(AbstractUser):
         return self.username
 
 
-class Habit(models.Model):
-    CATEGORY_CHOICES = [
-        ('health', 'Здоровье'),
-        ('sport', 'Спорт'),
-        ('study', 'Учеба'),
-        ('work', 'Работа'),
-        ('other', 'Другое'),
-    ]
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='health')
+    def __str__(self):
+        return self.name
+
+
+class Habit(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,  # <- это разрешает хранить NULL в БД
+        blank=True  # <- это позволяет оставить поле пустым в админке
+    )
+    category = models.ForeignKey(Category, on_delete=models.SET_DEFAULT, default=1)  # Ссылка на категорию
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     completed = models.BooleanField(default=False)
     completion_date = models.DateField(null=True, blank=True)
+    is_template = models.BooleanField(default=False)  # 👈 добавляем
 
     def __str__(self):
         return self.name

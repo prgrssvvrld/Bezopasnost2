@@ -288,9 +288,12 @@ select.form-select, input.form-input, textarea.form-textarea {
             transform: translateY(-1px);
         }
 
+
         .btn-edit {
             background-color: #38a169;
             color: white;
+            width: 100px;
+            height: 40px;
         }
 
         .btn-edit:hover {
@@ -301,6 +304,8 @@ select.form-select, input.form-input, textarea.form-textarea {
         .btn-delete {
             background-color: #e53e3e;
             color: white;
+            min-width: 100px;
+
         }
 
         .btn-delete:hover {

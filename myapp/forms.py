@@ -5,8 +5,9 @@ from django.contrib.auth.forms import UserCreationForm
 class HabitForm(forms.ModelForm):
     class Meta:
         model = Habit
-        fields = ['category', 'name', 'description']
+        fields = ['name', 'description']
         widgets = {
+            #'category': forms.Select(choices=Habit.CATEGORY_CHOICES),
             'category': forms.Select(attrs={'class': 'form-select'}),
             'name': forms.TextInput(attrs={'placeholder': 'Название привычки'}),
             'description': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Описание привычки'}),

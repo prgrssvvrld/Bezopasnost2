@@ -77,30 +77,24 @@
                 </div>
             </section>
 
+
             <section class="habits-list">
-                <h2>Мои привычки</h2>
-                <div class="habits-container">
-                    {% for habit in habits %}
-                    <div class="habit-item {% if habit.completed %}completed{% endif %}">
-                        <div class="habit-checkbox">
-                            <input
-                                type="checkbox"
-                                id="habit-{{ habit.id }}"
-                                {% if habit.completed %}checked{% endif %}
-                                onchange="toggleHabitCompletion({{ habit.id }}, this.checked)"
-                            >
-                            <label for="habit-{{ habit.id }}"></label>
-                        </div>
-                        <div class="habit-info">
-                            <span class="habit-category badge-{{ habit.category }}">{{ habit.get_category_display }}</span>
-                            <span class="habit-name">{{ habit.name }}</span>
-                            {% if habit.description %}
-                            <span class="habit-description">{{ habit.description }}</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
+                <h2 class="section-title">🧠 Мои привычки</h2>
+
+            {% for habit in habits %}
+            <div class="habit-card" data-habit-id="{{ habit.id }}">
+              <label class="checkbox-wrapper">
+                <input type="checkbox" {% if habit.completed_today %}checked{% endif %} data-habit-id="{{ habit.id }}">
+                <span class="checkmark"></span>
+              </label>
+              <div class="habit-content">
+                <p><strong>{{ habit.name }}</strong>{% if habit.description %} — {{ habit.description }}{% endif %}</p>
+              </div>
+            </div>
+            {% empty %}
+            <p>У вас пока нет привычек. Добавьте первую привычку!</p>
+            {% endfor %}
+
             </section>
 
             <section class="chart-section">
