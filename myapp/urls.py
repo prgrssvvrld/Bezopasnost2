@@ -22,7 +22,7 @@ urlpatterns = [
     path('habits/<int:habit_id>/edit/', views.edit_habit, name='edit_habit'),
     path('settings/', views.settings_view, name='settings'),
     path('change-password/', views.settings_view, name='change_password'),
-
+    path('calendar/', views.calendar_view, name='calendar'),
 
     path('faq/', views.faq_view, name='faq'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

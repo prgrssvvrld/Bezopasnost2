@@ -15,6 +15,9 @@ from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 from django.contrib.auth.forms import PasswordChangeForm
 from django import forms
+from django.utils import timezone
+from datetime import datetime, timedelta
+from django.db.models import Q
 
 @login_required
 def toggle_habit_completion(request, habit_id):
@@ -396,3 +399,80 @@ def settings_view(request):
         'user_form': user_form,
         'password_form': password_form
     })
+
+
+@login_required
+def calendar_view(request):
+    # Получаем текущую дату или выбранную пользователем
+    year = request.GET.get('year', timezone.now().year)
+    month = request.GET.get('month', timezone.now().month)
+
+    try:
+        year = int(year)
+        month = int(month)
+        current_date = datetime(year=year, month=month, day=1)
+    except (ValueError, TypeError):
+        current_date = timezone.now().replace(day=1)
+
+    prev_month = (current_date - timedelta(days=1)).replace(day=1)
+    next_month = (current_date + timedelta(days=32)).replace(day=1)
+
+    import calendar
+    cal = calendar.monthcalendar(current_date.year, current_date.month)
+
+    first_day = current_date.replace(day=1)
+    last_day = (current_date + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+
+    habits = Habit.objects.filter(
+        Q(user=request.user, completion_date__range=(first_day, last_day)) |
+        Q(user=request.user, is_template=True)
+    ).distinct()
+
+    habits_by_day = {}
+    for habit in habits:
+        if habit.completion_date:
+            day = habit.completion_date.day
+            if day not in habits_by_day:
+                habits_by_day[day] = []
+            habits_by_day[day].append(habit)
+
+    return render(request, 'habits/calendar.html', {
+        'calendar': cal,
+        'current_date': current_date,
+        'prev_month': prev_month,
+        'next_month': next_month,
+        'habits_by_day': habits_by_day,
+    })
+
+@login_required
+def toggle_habit_completion(request, habit_id):
+    if request.method == 'POST':
+        habit = get_object_or_404(Habit, id=habit_id, user=request.user)
+
+        try:
+            data = json.loads(request.body)
+            date_str = data.get('date')
+            if date_str:
+                date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            else:
+                date = None
+        except:
+            date = None
+
+        if date:
+            new_habit = Habit.objects.create(
+                user=request.user,
+                name=habit.name,
+                description=habit.description,
+                category=habit.category,
+                completion_date=date,
+                completed=True
+            )
+            return JsonResponse({'success': True, 'habit_id': new_habit.id})
+
+        habit.completed = not habit.completed
+        habit.completion_date = timezone.now().date() if habit.completed else None
+        habit.save()
+        return JsonResponse({'success': True})
+
+    return JsonResponse({'success': False}, status=400)

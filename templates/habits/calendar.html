@@ -1,0 +1,298 @@
+{% extends "habits/base.html" %}
+{% load static %}
+
+{% block title %}Календарь привычек{% endblock %}
+{% block header %}Календарь привычек{% endblock %}
+
+{% block content %}
+<div class="calendar-container">
+    <div class="calendar-header">
+        <a href="?year={{ prev_month.year }}&month={{ prev_month.month }}" class="calendar-nav">
+            <i class="fas fa-chevron-left"></i> {{ prev_month|date:"F Y" }}
+        </a>
+        <h2>{{ current_date|date:"F Y" }}</h2>
+        <a href="?year={{ next_month.year }}&month={{ next_month.month }}" class="calendar-nav">
+            {{ next_month|date:"F Y" }} <i class="fas fa-chevron-right"></i>
+        </a>
+    </div>
+
+    <table class="calendar-table">
+        <thead>
+            <tr>
+                <th>Пн</th>
+                <th>Вт</th>
+                <th>Ср</th>
+                <th>Чт</th>
+                <th>Пт</th>
+                <th>Сб</th>
+                <th>Вс</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for week in calendar %}
+                <tr>
+                    {% for day in week %}
+                        <!-- В таблице календаря замените td на такой код -->
+<td class="{% if day == 0 %}empty{% else %}day{% endif %}"
+    data-day="{{ day }}"
+    data-month="{{ current_date.month }}"
+    data-year="{{ current_date.year }}">
+    {% if day != 0 %}
+        <div class="day-number">{{ day }}</div>
+        <div class="day-habits">
+            {% if day in habits_by_day %}
+                {% for habit in habits_by_day|get_item:day %}
+                    <div class="habit-badge"
+                         style="background-color: {{ habit.category.color|default:'#406ff3' }}">
+                        {{ habit.name }}
+                        <span class="remove-habit" data-habit-id="{{ habit.id }}">×</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <button class="add-habit-btn">
+            <i class="fas fa-plus"></i>
+        </button>
+    {% endif %}
+</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Модальное окно для добавления привычки -->
+<div id="add-habit-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Добавить привычку</h3>
+            <button class="close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="add-habit-form">
+                <input type="hidden" id="selected-date" value="">
+                <div class="form-group">
+                    <label for="habit-select">Выберите привычку:</label>
+                    <select id="habit-select" class="form-control">
+                        {% for habit in request.user.habit_set.all %}
+                            <option value="{{ habit.id }}">{{ habit.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Добавить</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .calendar-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: var(--bg-secondary);
+        border-radius: var(--borderRadius);
+        box-shadow: var(--shadow);
+    }
+    
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .calendar-nav {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .calendar-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .calendar-table th {
+        padding: 10px;
+        text-align: center;
+        background-color: var(--primary);
+        color: white;
+    }
+    
+    .calendar-table td {
+        height: 100px;
+        vertical-align: top;
+        padding: 5px;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .calendar-table td.empty {
+        background-color: #f8fafc;
+    }
+    
+    .calendar-table td.day {
+        background-color: white;
+    }
+    
+    .day-number {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .day-habits {
+        max-height: 60px;
+        overflow-y: auto;
+    }
+    
+    .habit-badge {
+        font-size: 0.8rem;
+        padding: 2px 5px;
+        margin: 2px 0;
+        border-radius: 4px;
+        color: white;
+        cursor: pointer;
+    }
+    
+    .add-habit-btn {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+    
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .modal-content {
+        background-color: white;
+        margin: 10% auto;
+        padding: 20px;
+        border-radius: 8px;
+        width: 80%;
+        max-width: 500px;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработчик клика по дню календаря
+    document.querySelectorAll('td.day').forEach(dayCell => {
+        dayCell.addEventListener('click', function(e) {
+            // Проверяем, что клик не по внутренним элементам
+            if (e.target.classList.contains('add-habit-btn') ||
+                e.target.classList.contains('habit-badge') ||
+                e.target.classList.contains('remove-habit')) {
+                return;
+            }
+
+            const day = this.dataset.day;
+            const month = this.dataset.month;
+            const year = this.dataset.year;
+
+            showAddHabitModal(day, month, year);
+        });
+    });
+
+    // Обработчик для кнопки добавления привычки
+    document.querySelectorAll('.add-habit-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const dayCell = this.closest('td.day');
+            const day = dayCell.dataset.day;
+            const month = dayCell.dataset.month;
+            const year = dayCell.dataset.year;
+
+            showAddHabitModal(day, month, year);
+        });
+    });
+
+    function showAddHabitModal(day, month, year) {
+        // Форматируем дату
+        const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+        document.getElementById('selected-date').value = dateStr;
+
+        // Показываем модальное окно
+        document.getElementById('add-habit-modal').style.display = 'block';
+    }
+
+    // Закрытие модального окна
+    document.querySelector('.close').addEventListener('click', function() {
+        document.getElementById('add-habit-modal').style.display = 'none';
+    });
+
+    // Отправка формы
+    document.getElementById('add-habit-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const habitId = document.getElementById('habit-select').value;
+        const date = document.getElementById('selected-date').value;
+
+        fetch(`/habits/${habitId}/toggle/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                date: date,
+                completed: true
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка при добавлении привычки');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка');
+        });
+    });
+
+    // Удаление привычки
+    document.querySelectorAll('.remove-habit').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const habitId = this.dataset.habitId;
+
+            if (confirm('Удалить эту привычку из календаря?')) {
+                fetch(`/habits/${habitId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

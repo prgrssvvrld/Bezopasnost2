@@ -1,3 +1,5 @@
+from datetime import timezone
+
 from django.db import models
 from django.conf import settings  # Import settings for AUTH_USER_MODEL
 from django.contrib.auth.models import AbstractUser
@@ -63,5 +65,16 @@ class Habit(models.Model):
     completion_date = models.DateField(null=True, blank=True)
     is_template = models.BooleanField(default=False)  # 👈 добавляем
 
+    def toggle_completion(self, date=None):
+        if not date:
+            date = timezone.now().date()
+
+        if self.completion_date == date:
+            self.completed = False
+            self.completion_date = None
+        else:
+            self.completed = True
+            self.completion_date = date
+        self.save()
     def __str__(self):
         return self.name
