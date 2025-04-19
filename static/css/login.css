@@ -3,7 +3,7 @@
 }
 .toggle-password {
     position: absolute;
-    right: 0px; /* Расположение глазка право-лево */
+    right: 10px; /* Расположение глазка право-лево */
     top: 56px; /* Расположение глазка верх-низ */
     transform: translateY(-50%);
     cursor: pointer;
@@ -84,14 +84,24 @@ label {
 input {
     display: block;
     height: 45px;
-    width: 100%;
+    width: 93%;
     background-color: rgba(255,255,255,0.07);
+    border: 2px solid transparent;
     border-radius: 3px;
     padding: 0 10px;
     margin-top: 8px;
     font-size: 14px;
     color: #ffffff;
+    outline: none;
+    transition: border 0.3s ease, background-color 0.3s ease;
 }
+input:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+input:focus {
+    border: 2px solid #ff6b00;
+    background-color: rgba(255,255,255,0.15);
+    }
 button {
     margin-top: 30px;
     width: 100%;
@@ -102,6 +112,9 @@ button {
     border-radius: 5px;
     cursor: pointer;
 }
+button:hover {
+    background-color: #ff7b22;
+}
 p {
     color: #ffffff;
     text-align: center;
@@ -110,4 +123,81 @@ p {
 a {
     color: #ff6b00;
     text-decoration: none;
+}
+a:hover {
+    color: #ff7b22;
+    text-decoration: underline;
+}
+
+.theme-toggle {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    width: 36px;
+    height: 36px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border: none;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 1000;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.theme-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+/* Светлая тема */
+body.light-theme {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+body.light-theme .background {
+    filter: none;
+    opacity: 0.1;
+}
+
+body.light-theme .overlay-text {
+    color: #222;
+    filter: none;
+}
+
+body.light-theme form {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 2px solid #ddd;
+}
+
+body.light-theme input,
+body.light-theme label,
+body.light-theme p,
+body.light-theme form h2 {
+    color: #222;
+}
+body.light-theme a {
+    color: #ff6b00;
+    }
+body.light-theme input {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme input:hover {
+    background-color: rgba(0, 0, 0, 0.07);
+}
+
+body.light-theme input:focus {
+    border: 2px solid #ff6b00;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme .theme-toggle {
+    color: #222;
+    background-color: rgba(0, 0, 0, 0.1);
 }

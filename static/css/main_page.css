@@ -38,7 +38,7 @@ select.form-select, input.form-input, textarea.form-textarea {
     }
 
 .habit-form {
-        background: #fff;
+        background-color: var(--bg-third);
         border-radius: 12px;
         padding: 25px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -140,7 +140,14 @@ select.form-select, input.form-input, textarea.form-textarea {
             transition: opacity 200ms ease 100ms;
         }
 
-        .navbar:hover .navbar__menu {
+        .navbar--open {
+            border-radius: var(--borderRadius);
+            width: calc(var(--linkHeight) * 1);
+            height: calc(100vh - (var(--spacer) * 25));
+            padding: calc(var(--spacer) / 2) 0;
+        }
+
+        .navbar:hover .navbar__menu,  .navbar--open {
             opacity: 1;
         }
 
@@ -258,10 +265,18 @@ select.form-select, input.form-input, textarea.form-textarea {
             color: var(--text);
         }
 
-        .form-input:focus, .form-textarea:focus {
+        .habit-form input:hover,
+        .habit-form textarea:hover,
+        .form-input:hover,
+        .form-textarea:hover {
+            border-color: #ff6b00;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+            border-color: #ff6b00;
+            box-shadow: none;
         }
 
         .btn {
@@ -293,7 +308,7 @@ select.form-select, input.form-input, textarea.form-textarea {
             background-color: #38a169;
             color: white;
             width: 100px;
-            height: 40px;
+            height: 25px;
         }
 
         .btn-edit:hover {

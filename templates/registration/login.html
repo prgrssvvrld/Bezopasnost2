@@ -1,13 +1,31 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <script>
+    (function () {
+        try {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isLight = savedTheme === 'light' || (!savedTheme && !prefersDark);
+
+            if (isLight) {
+                document.documentElement.classList.add('light-theme');
+            }
+        } catch (e) {
+            console.error('Theme init error:', e);
+        }
+    })();
+    </script>
+
     <title>Вход</title>
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
     {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}"> <!-- Подключение внешнего CSS -->
 </head>
 <body>
+    <button id="theme-toggle" class="theme-toggle" title="Сменить тему"></button>
     <div class="background"></div>
     <div class="balloons"></div> <!-- Фон с шариками -->
 
@@ -23,22 +41,65 @@
         <div class="password-container">
             <label for="id_password">Пароль:</label>
             <input type="password" name="password" id="id_password" required>
-            <span class="toggle-password" onclick="togglePassword()">👁️</span>
+            <span class="toggle-password" onclick="togglePassword('id_password')">
+                <i class="eye-icon fas fa-eye"></i>
+            </span>
         </div>
 
         <button type="submit">Войти</button>
         <p><a href="{% url 'password_reset' %}">Забыли пароль?</a></p>
         <p>Нет аккаунта? <a href="{% url 'sign_up' %}">Зарегистрируйтесь</a>.</p>
     </form>
+    <script src="https://unpkg.com/feather-icons"></script>
     <script>
-        function togglePassword() {
-            const passwordField = document.getElementById('id_password');
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
-            } else {
-                passwordField.type = 'password';
-            }
+    function togglePassword(fieldId) {
+    const passwordField = document.getElementById(fieldId);
+    const eyeIcon = passwordField.nextElementSibling.querySelector('.eye-icon');
+
+    if (passwordField.type === "password") {
+        passwordField.type = "text";
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordField.type = "password";
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+    }
+}
+
+    const themeToggle = document.getElementById('theme-toggle');
+
+    function updateIcon(isLight) {
+        const iconHtml = isLight
+            ? feather.icons.moon.toSvg()  // при светлой теме — показываем луну
+            : feather.icons.sun.toSvg();  // при тёмной теме — показываем солнце
+        themeToggle.innerHTML = iconHtml;
+        feather.replace();
+    }
+
+    function setInitialTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isLight = savedTheme === 'light' || (!savedTheme && !prefersDark);
+
+        if (isLight) {
+            document.body.classList.add('light-theme');
+        } else {
+            document.body.classList.remove('light-theme');
         }
+
+        updateIcon(isLight);
+    }
+
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('light-theme');
+        const isLight = document.body.classList.contains('light-theme');
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        updateIcon(isLight);
+    });
+
+    setInitialTheme();
     </script>
+
 </body>
 </html>
