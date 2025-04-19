@@ -96,7 +96,14 @@
             transition: opacity 200ms ease 100ms;
         }
 
-        .navbar:hover .navbar__menu {
+        .navbar--open {
+            border-radius: var(--borderRadius);
+            width: calc(var(--linkHeight) * 1);
+            height: calc(100vh - (var(--spacer) * 25));
+            padding: calc(var(--spacer) / 2) 0;
+        }
+
+        .navbar:hover .navbar__menu,  .navbar--open {
             opacity: 1;
         }
 

@@ -95,3 +95,20 @@
         display: flex;
         gap: 10px;
     }
+
+    .highlight-on-hover {
+        border: 1px solid #e2e8f0;
+        transition: border-color 0.3s ease;
+    }
+
+    .highlight-on-hover:hover,
+    .highlight-on-hover:focus {
+        border: 1px solid #ff6b00;
+        outline: none;
+    }
+
+    .btn-secondary:hover {
+        color: #ff6b00;
+        text-decoration: underline;
+        transition: color 0.3s ease, text-decoration 0.3s ease;
+    }
