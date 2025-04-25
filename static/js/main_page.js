@@ -143,17 +143,23 @@ document.addEventListener('DOMContentLoaded', function () {
     // Добавление существующей привычки пользователю
     // Добавление привычки в список пользователя
 function addExistingHabit(habitId) {
+    const dateInput = document.getElementById('modal-date');
+    const selectedDate = dateInput.value;
+
     fetch(`/api/habits/add-template/${habitId}/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCSRFToken(),
-        }
+        },
+        body: JSON.stringify({
+            date: selectedDate // Добавляем дату в запрос
+        })
     })
     .then(response => response.json())
     .then(data => {
         if (data.id) {
-            addHabitToUserList(data); // data — это уже привычка
+            addHabitToUserList(data);
             closeModal();
         } else {
             alert(data.message || 'Произошла ошибка при добавлении привычки');
@@ -300,39 +306,39 @@ function disableSaveButton(button) {
 
 
 if (addHabitInModal) {
-addHabitInModal.addEventListener('submit', function(e) {
-    e.preventDefault();
+    addHabitInModal.addEventListener('submit', function(e) {
+        e.preventDefault();
 
-    document.getElementById('id_category_id').value = currentCategoryId;
+        const habitName = document.getElementById('id_name').value;
+        const habitDescription = document.getElementById('id_description').value;
+        const habitDate = document.getElementById('id_date').value;
 
-    const habitName = document.getElementById('id_name').value;
-    const habitDescription = document.getElementById('id_description').value;
-
-    fetch(`/api/habits/create/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken(), // Django CSRF
-        },
-        body: JSON.stringify({
-            name: habitName,
-            description: habitDescription,
-            category_id: currentCategoryId
-        }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            window.location.reload(); // 💥 ВСЕГДА обновляем страницу
-        } else {
-            alert(data.message || 'Ошибка при добавлении привычки');
-        }
-    })
-    .catch(error => {
-        alert('Ошибка при добавлении привычки.');
-        console.error(error);
+        fetch(`/api/habits/create/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+            },
+            body: JSON.stringify({
+                name: habitName,
+                description: habitDescription,
+                category_id: currentCategoryId,
+                date: habitDate  // Дата
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Ошибка при добавлении привычки');
+            }
+        })
+        .catch(error => {
+            alert('Ошибка при добавлении привычки.');
+            console.error(error);
+        });
     });
-});
 }
 
 
@@ -346,3 +352,25 @@ addHabitInModal.addEventListener('submit', function(e) {
     // Показать категории при загрузке
     showView(categoryOptionsContainer);
 });
+function updateMoonIcon(isDark) {
+    const iconHtml = isDark
+        ? feather.icons.sun.toSvg()
+        : feather.icons.moon.toSvg();
+    themeToggle.innerHTML = iconHtml;
+
+    // Принудительное обновление стилей календаря
+    const calendar = document.querySelector('.calendar-container');
+    if (calendar) {
+        if (isDark) {
+            calendar.classList.add('dark-mode');
+        } else {
+            calendar.classList.remove('dark-mode');
+        }
+
+        // Принудительное обновление цветов
+        const dayNumbers = document.querySelectorAll('.day-number');
+        dayNumbers.forEach(el => {
+            el.style.color = isDark ? 'white' : 'inherit';
+        });
+    }
+}

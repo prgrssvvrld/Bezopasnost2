@@ -51,6 +51,7 @@ def api_add_habit(request):
 
         name = data.get('name')
         description = data.get('description')
+        date_str = data.get('date')
 
         if not name:
             return JsonResponse({'success': False, 'message': 'Название обязательно'}, status=400)
@@ -62,12 +63,22 @@ def api_add_habit(request):
             completed=False,
         )
 
+        # Если дата указана, устанавливаем ее
+        if date_str:
+            try:
+                habit.completion_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                habit.completed = True
+                habit.save()
+            except ValueError:
+                pass
+
         return JsonResponse({
             'success': True,
             'habit': {
                 'id': habit.id,
                 'name': habit.name,
                 'description': habit.description,
+                'completion_date': habit.completion_date.strftime('%Y-%m-%d') if habit.completion_date else None
             }
         }, status=201)
 
@@ -79,22 +90,35 @@ def api_add_habit(request):
 @csrf_exempt
 def add_template_habit(request, habit_id):
     if request.method == 'POST':
-        template_habit = get_object_or_404(Habit, id=habit_id, is_template=True)
+        try:
+            data = json.loads(request.body)
+            date_str = data.get('date')
 
-        # Создаём копию шаблона для пользователя
-        user_habit = Habit.objects.create(
-            name=template_habit.name,
-            description=template_habit.description,
-            category=template_habit.category,
-            user=request.user,
-            completed=False,
-        )
+            template_habit = get_object_or_404(Habit, id=habit_id, is_template=True)
 
-        return JsonResponse({
-            'id': user_habit.id,
-            'name': user_habit.name,
-            'description': user_habit.description
-        }, status=201)
+            user_habit = Habit.objects.create(
+                name=template_habit.name,
+                description=template_habit.description,
+                category=template_habit.category,
+                user=request.user,
+                completed=False,
+            )
+
+            if date_str:
+                try:
+                    user_habit.completion_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                    user_habit.completed = True
+                    user_habit.save()
+                except ValueError:
+                    pass
+
+            return JsonResponse({
+                'id': user_habit.id,
+                'name': user_habit.name,
+                'description': user_habit.description
+            }, status=201)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Неверный метод'}, status=405)
 

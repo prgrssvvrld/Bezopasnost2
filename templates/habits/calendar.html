@@ -294,5 +294,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+    function updateMoonIcon(isDark) {
+    const iconHtml = isDark
+        ? feather.icons.sun.toSvg()
+        : feather.icons.moon.toSvg();
+    themeToggle.innerHTML = iconHtml;
+
+
+    const calendar = document.querySelector('.calendar-container');
+    if (calendar) {
+        if (isDark) {
+            calendar.classList.add('dark-mode');
+        } else {
+            calendar.classList.remove('dark-mode');
+        }
+    }
+}
 </script>
 {% endblock %}

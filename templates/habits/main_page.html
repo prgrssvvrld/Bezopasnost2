@@ -447,6 +447,13 @@
                         <textarea name="description" id="id_description" class="form-textarea" rows="3" placeholder="Опишите детали привычки..."></textarea>
                     </label>
                 </div>
+                <!-- Добавьте этот блок для выбора даты -->
+                <div class="form-group">
+                    <label for="id_date" class="form-label">
+                        <i class="fas fa-calendar-alt"></i> Дата выполнения (необязательно):
+                        <input type="date" name="date" id="id_date" class="form-input">
+                    </label>
+                </div>
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-plus-circle"></i> Добавить привычку
                 </button>
@@ -532,13 +539,21 @@
 
                 <!-- Контейнер для списка привычек в выбранной категории -->
                 <div id="habit-list-container" class="modal-container">
-                    <button class="back-button" id="back-to-categories">Назад к категориям</button>
-                    <h3>Привычки в выбранной категории:</h3>
-                    <ul class="habit-list"></ul>
-                    <button class="add-habit-btn" id="add-habit-in-modal">
-                        <i class="fas fa-plus-circle"></i> Добавить свою привычку
-                    </button>
-                </div>
+    <button class="back-button" id="back-to-categories">Назад к категориям</button>
+    <h3>Привычки в выбранной категории:</h3>
+    <ul class="habit-list"></ul>
+
+    <div class="form-group date-picker-container">
+        <label for="modal-date" class="form-label">
+            <i class="fas fa-calendar-alt"></i> Дата выполнения (необязательно):
+        </label>
+        <input type="date" id="modal-date" class="form-input">
+    </div>
+
+    <button class="add-habit-btn" id="add-habit-in-modal">
+        <i class="fas fa-plus-circle"></i> Добавить свою привычку
+    </button>
+</div>
 
                 <!-- Контейнер для редактирования привычки -->
                 <div id="edit-habit-container" class="modal-container">

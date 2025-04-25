@@ -83,7 +83,6 @@
     cursor: pointer;
 }
 
-/* Стили для модального окна */
 .modal {
     display: none;
     position: fixed;
@@ -188,4 +187,84 @@ td.day:hover .add-habit-btn {
 
 .remove-habit:hover {
     color: #ff0000;
+}
+.dark-mode .calendar-table td.day {
+        color: white;
+    }
+
+.dark-mode .calendar-table th {
+    color: white;
+    background-color: #2d3748;
+}
+
+.dark-mode .calendar-table td.day {
+    background-color: #2d3748;
+}
+
+.dark-mode .calendar-header h2,
+.dark-mode .calendar-nav {
+    color: white;
+}
+/* Добавьте в конец файла */
+.dark-mode .calendar-container {
+    background-color: #2d3748;
+}
+
+.dark-mode .calendar-table td.day {
+    background-color: #2d3748;
+    color: white !important;
+}
+
+.dark-mode .calendar-table th {
+    background-color: #1a202c;
+    color: white !important;
+}
+
+.dark-mode .day-number {
+    color: black !important;
+    font-weight: bold;
+}
+
+.dark-mode .calendar-header h2,
+.dark-mode .calendar-nav {
+    color: white !important;
+}
+
+.dark-mode .habit-badge {
+    color: white !important;
+    background-color: #4a5568 !important;
+}
+
+.dark-mode .add-habit-btn {
+    background-color: #4a5568;
+    color: white;
+}
+.habit-badge {
+    word-wrap: break-word;
+    white-space: normal;
+    margin-bottom: 2px;
+    display: inline-block;
+    max-width: 100%;
+    font-size: 0.7rem;
+    line-height: 1.2;
+    padding: 2px 4px;
+}
+
+.day-habits {
+    max-height: 80px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.day-habits::-webkit-scrollbar {
+    width: 4px;
+}
+
+.day-habits::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 2px;
+}
+.dark-mode td.day .day-number {
+    color: white !important;
+    opacity: 1 !important;
 }
