@@ -37,11 +37,16 @@
     </div>
 
     <!-- Collapsible navbar -->
-    <nav class="navbar">
+     <nav class="navbar">
         <ul class="navbar__menu">
             <li class="navbar__item">
-                <a href="{% url 'dashboard' %}" class="navbar__link" title="Главная">
+                <a href="{% url 'home' %}" class="navbar__link" title="Главная">
                     <i data-feather="home"></i>
+                </a>
+            </li>
+            <li class="navbar__item">
+                <a href="{% url 'dashboard' %}" class="navbar__link" title="Календарь">
+                    <i data-feather="edit-3"></i>
                 </a>
             </li>
             <li class="navbar__item">
