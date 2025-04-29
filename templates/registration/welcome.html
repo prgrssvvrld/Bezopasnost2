@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HabitZone | Трекер привычек</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        :root {
+            --borderRadius: 12px;
+            --spacer: 1rem;
+            --primary: #406ff3;
+            --text: #4a5568;
+            --text-light: #718096;
+            --bg: #f8fafc;
+            --bg-secondary: #ffffff;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --timing: 250ms;
+            --transition: all var(--timing) ease;
+            --accent: #ff6b00;
+            --accent-hover: #e05d00;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero {
+            display: flex;
+            align-items: center;
+            gap: 4rem;
+        }
+
+        .hero-image {
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .hero-image img {
+            width: 100%;
+            height: auto;
+            border-radius: var(--borderRadius);
+            box-shadow: var(--shadow-md);
+        }
+
+        .hero-content {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--borderRadius);
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            border: 1px solid var(--text-light);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                flex-direction: column;
+                gap: 2rem;
+                text-align: center;
+            }
+
+            .auth-buttons {
+                justify-content: center;
+            }
+
+            .logo {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <div class="hero-image">
+                <!-- Минималистичная иллюстрация привычек -->
+                <img src="https://illustrations.popsy.co/amber/digital-nomad.svg" alt="Трекер привычек">
+            </div>
+            <div class="hero-content">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i data-feather="check-circle"></i>
+                    </div>
+                    <div class="logo-text">HabitZone</div>
+                </div>
+                <h1>Создайте свои идеальные привычки</h1>
+                <p class="subtitle">
+                    Отслеживайте прогресс, мотивируйте себя и достигайте целей
+                    с нашим простым и удобным трекером привычек.
+                </p>
+                <div class="auth-buttons">
+                    <a href="{% url 'login' %}" class="btn btn-primary">
+                        <i data-feather="log-in"></i> Войти
+                    </a>
+                    <a href="{% url 'sign_up' %}" class="btn btn-secondary">
+                        <i data-feather="user-plus"></i> Регистрация
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        © 2023 HabitZone. Все права защищены.
+    </footer>
+
+    <script>
+        feather.replace();
+    </script>
+</body>
+</html>

@@ -19,6 +19,13 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from django.db.models import Q
 
+
+def welcome_page(request):
+    return render(request, 'registration/welcome.html')
+
+def home_page(request):
+    return render(request, 'habits/home.html')
+
 @login_required
 def toggle_habit_completion(request, habit_id):
     if request.method == 'POST':
@@ -189,7 +196,7 @@ def custom_login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('dashboard')
+            return redirect('home')
         else:
             return render(request, 'registration/login.html', {'error': 'Неверные данные'})
     return render(request, 'registration/login.html')
@@ -201,7 +208,7 @@ def signup(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('habits')
+            return redirect('home')
     else:
         form = CustomUserCreationForm()
     return render(request, 'registration/sign_up.html', {'form': form})
@@ -236,6 +243,7 @@ def chart_view(request):
 
 @login_required
 def dashboard(request):
+
     if request.method == 'POST':
         form = HabitForm(request.POST)
         if form.is_valid():
@@ -500,3 +508,5 @@ def toggle_habit_completion(request, habit_id):
         return JsonResponse({'success': True})
 
     return JsonResponse({'success': False}, status=400)
+
+

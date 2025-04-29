@@ -4,9 +4,15 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('', views.custom_login, name='home'),
+    path('', views.welcome_page, name='welcome'),
+    path('login/', views.custom_login, name='login'),
+    # path('signup/', views.signup, name='sign_up'),
+    # path('logout/', views.custom_logout, name='logout'),
+
     path('dashboard/', views.dashboard, name='dashboard'),
     path('dashboard/add/', views.add_habit, name='add_habit'),
+    path('home/', views.home_page, name='home'),
+
     #path('dashboard/<int:habit_id>/edit/', views.edit_habit, name='edit_habit'),
     #path('dashboard/<int:habit_id>/delete/', views.delete_habit, name='delete_habit'),
     path('dashboard/chart/', views.chart_view, name='chart'),

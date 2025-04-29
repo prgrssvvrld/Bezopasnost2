@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Трекер привычек - Главная</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/home.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body>
+
+
+    <div class="user-icon">
+        <a href="{% url 'profile' %}">
+            {% if request.user.profile_picture %}
+                <img src="{{ request.user.profile_picture.url }}" alt="Profile">
+            {% else %}
+                <i class="fas fa-user"></i>
+            {% endif %}
+        </a>
+    </div>
+
+    <nav class="navbar">
+        <ul class="navbar__menu">
+            <li class="navbar__item">
+                <a href="{% url 'home' %}" class="navbar__link" title="Главная">
+                    <i data-feather="home"></i>
+                </a>
+            </li>
+            <li class="navbar__item">
+                <a href="{% url 'dashboard' %}" class="navbar__link" title="Календарь">
+                    <i data-feather="edit-3"></i>
+                </a>
+            </li>
+            <li class="navbar__item">
+                <a href="{% url 'calendar' %}" class="navbar__link" title="Календарь">
+                    <i data-feather="calendar"></i>
+                </a>
+            </li>
+            <li class="navbar__item">
+                <a href="{% url 'chart' %}" class="navbar__link" title="Статистика">
+                    <i data-feather="bar-chart-2"></i>
+                </a>
+            </li>
+            <li class="navbar__item">
+                <a href="{% url 'faq' %}" class="navbar__link" title="Помощь">
+                    <i data-feather="help-circle"></i>
+                </a>
+            </li>
+            <li class="navbar__item">
+                <a href="{% url 'settings' %}" class="navbar__link" title="Настройки">
+                    <i data-feather="settings"></i>
+                </a>
+            </li>
+            <li class="navbar__item">
+                <a href="#" class="navbar__link" id="theme-toggle" title="Сменить тему">
+                    <i data-feather="moon"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="header">
+            <h1>Добро пожаловать в трекер привычек</h1>
+            <p>Следите за своими привычками и улучшайте свою жизнь</p>
+        </div>
+
+        <div class="stats-cards">
+            <div class="card">
+                <p class="card__title">Текущая серия</p>
+                <p class="card__value">12 дней</p>
+            </div>
+            <div class="card">
+                <p class="card__title">Выполнено сегодня</p>
+                <p class="card__value">3/5</p>
+            </div>
+        </div>
+
+        <div class="habits-list">
+            <h2>Мои привычки</h2>
+
+            <div class="habit-item">
+                <div class="habit-info">
+                    <div class="habit-icon">
+                        <i data-feather="book"></i>
+                    </div>
+                    <div>
+                        <div class="habit-name">Чтение книги</div>
+                        <div class="habit-streak">7 дней подряд</div>
+                    </div>
+                </div>
+                <div class="habit-check checked"></div>
+            </div>
+
+            <div class="habit-item">
+                <div class="habit-info">
+                    <div class="habit-icon">
+                        <i data-feather="activity"></i>
+                    </div>
+                    <div>
+                        <div class="habit-name">Утренняя зарядка</div>
+                        <div class="habit-streak">15 дней подряд</div>
+                    </div>
+                </div>
+                <div class="habit-check checked"></div>
+            </div>
+
+            <div class="habit-item">
+                <div class="habit-info">
+                    <div class="habit-icon">
+                        <i data-feather="droplet"></i>
+                    </div>
+                    <div>
+                        <div class="habit-name">Пить воду</div>
+                        <div class="habit-streak">5 дней подряд</div>
+                    </div>
+                </div>
+                <div class="habit-check"></div>
+            </div>
+
+            <div class="habit-item">
+                <div class="habit-info">
+                    <div class="habit-icon">
+                        <i data-feather="moon"></i>
+                    </div>
+                    <div>
+                        <div class="habit-name">Ранний отход ко сну</div>
+                        <div class="habit-streak">3 дня подряд</div>
+                    </div>
+                </div>
+                <div class="habit-check"></div>
+            </div>
+
+            <div class="add-habit">
+                <i data-feather="plus"></i>
+                Добавить привычку
+            </div>
+        </div>
+    </main>
+
+    <script>
+        feather.replace(); // <-- снова перерисовать все иконки
+
+        // Переключение темы
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.body.classList.toggle('dark-mode');
+
+            // Сохранение предпочтения темы в localStorage
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+
+            // Изменение иконки в зависимости от темы
+            const icon = themeToggle.querySelector('i');
+            if (isDark) {
+                feather.icons['sun'].replace(icon);
+                themeToggle.setAttribute('title', 'Светлая тема');
+            } else {
+                feather.icons['moon'].replace(icon);
+                themeToggle.setAttribute('title', 'Тёмная тема');
+            }
+        });
+
+        // Проверка сохранённой темы при загрузке
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            const icon = themeToggle.querySelector('i');
+            feather.icons['sun'].replace(icon);
+            themeToggle.setAttribute('title', 'Светлая тема');
+        }
+
+        // Обработка кликов по привычкам
+        document.querySelectorAll('.habit-check').forEach(check => {
+            check.addEventListener('click', function() {
+                this.classList.toggle('checked');
+            });
+        });
+
+        // Для мобильных устройств - открытие по клику
+        const navbar = document.getElementById('navbar');
+
+        if (window.innerWidth <= 768) {
+            navbar.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.toggle('navbar--open');
+                }
+            });
+
+            // Закрытие меню при клике вне его области
+            document.addEventListener('click', function(event) {
+                if (!navbar.contains(event.target) && !event.target.classList.contains('navbar__link')) {
+                    navbar.classList.remove('navbar--open');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
