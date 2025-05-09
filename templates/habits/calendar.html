@@ -17,49 +17,48 @@
     </div>
 
     <table class="calendar-table">
-        <thead>
+    <thead>
+        <tr>
+            <th>Пн</th>
+            <th>Вт</th>
+            <th>Ср</th>
+            <th>Чт</th>
+            <th>Пт</th>
+            <th>Сб</th>
+            <th>Вс</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for week in calendar %}
             <tr>
-                <th>Пн</th>
-                <th>Вт</th>
-                <th>Ср</th>
-                <th>Чт</th>
-                <th>Пт</th>
-                <th>Сб</th>
-                <th>Вс</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for week in calendar %}
-                <tr>
-                    {% for day in week %}
-                        <!-- В таблице календаря замените td на такой код -->
-<td class="{% if day == 0 %}empty{% else %}day{% endif %}"
-    data-day="{{ day }}"
-    data-month="{{ current_date.month }}"
-    data-year="{{ current_date.year }}">
-    {% if day != 0 %}
-        <div class="day-number">{{ day }}</div>
-        <div class="day-habits">
-            {% if day in habits_by_day %}
-                {% for habit in habits_by_day|get_item:day %}
-                    <div class="habit-badge"
-                         style="background-color: {{ habit.category.color|default:'#406ff3' }}">
-                        {{ habit.name }}
-                        <span class="remove-habit" data-habit-id="{{ habit.id }}">×</span>
-                    </div>
+                {% for day in week %}
+                    <td class="{% if day == 0 %}empty{% else %}day{% endif %}"
+                        data-day="{{ day }}"
+                        data-month="{{ current_date.month }}"
+                        data-year="{{ current_date.year }}">
+                        {% if day != 0 %}
+                            <div class="day-number">{{ day }}</div>
+                            <div class="day-habits">
+                                {% for habit in habits %}
+                                    {% if habit.completion_date.day == day and habit.completion_date.month == current_date.month %}
+                                        <div class="habit-badge"
+                                             style="background-color: {{ habit.category.color|default:'#406ff3' }}">
+                                            {{ habit.name }}
+                                            <span class="remove-habit" data-habit-id="{{ habit.id }}">×</span>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <button class="add-habit-btn">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        {% endif %}
+                    </td>
                 {% endfor %}
-            {% endif %}
-        </div>
-        <button class="add-habit-btn">
-            <i class="fas fa-plus"></i>
-        </button>
-    {% endif %}
-</td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
 </div>
 
 <!-- Модальное окно для добавления привычки -->
@@ -193,6 +192,36 @@
 </style>
 
 <script>
+    function refreshCalendar() {
+    fetch(`/api/habits/calendar/?month={{ current_date.month }}&year={{ current_date.year }}`)
+        .then(response => response.json())
+        .then(data => {
+            // Обновляем отображение привычек
+            document.querySelectorAll('td.day').forEach(dayCell => {
+                const day = parseInt(dayCell.dataset.day);
+                const habitsContainer = dayCell.querySelector('.day-habits');
+                habitsContainer.innerHTML = '';
+
+                data.habits.forEach(habit => {
+                    const habitDate = new Date(habit.completion_date);
+                    if (habitDate.getDate() === day &&
+                        habitDate.getMonth() + 1 === parseInt(dayCell.dataset.month)) {
+                        const habitBadge = document.createElement('div');
+                        habitBadge.className = 'habit-badge';
+                        habitBadge.style.backgroundColor = habit.category?.color || '#406ff3';
+                        habitBadge.innerHTML = `
+                            ${habit.name}
+                            <span class="remove-habit" data-habit-id="${habit.id}">×</span>
+                        `;
+                        habitsContainer.appendChild(habitBadge);
+                    }
+                });
+            });
+        });
+}
+
+// Вызываем при загрузке и после добавления привычки
+document.addEventListener('DOMContentLoaded', refreshCalendar);
 document.addEventListener('DOMContentLoaded', function() {
     // Обработчик клика по дню календаря
     document.querySelectorAll('td.day').forEach(dayCell => {
@@ -310,5 +339,100 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 }
+    // calendar.html
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработчик клика по дню календаря
+    document.querySelectorAll('td.day').forEach(dayCell => {
+        dayCell.addEventListener('click', function(e) {
+            if (e.target.classList.contains('add-habit-btn') ||
+                e.target.classList.contains('habit-badge') ||
+                e.target.classList.contains('remove-habit')) {
+                return;
+            }
+
+            const day = this.dataset.day;
+            const month = this.dataset.month;
+            const year = this.dataset.year;
+            showAddHabitModal(day, month, year);
+        });
+    });
+
+    // Обработчик для кнопки добавления привычки
+    document.querySelectorAll('.add-habit-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const dayCell = this.closest('td.day');
+            const day = dayCell.dataset.day;
+            const month = dayCell.dataset.month;
+            const year = dayCell.dataset.year;
+            showAddHabitModal(day, month, year);
+        });
+    });
+
+    function showAddHabitModal(day, month, year) {
+        const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+        document.getElementById('selected-date').value = dateStr;
+        document.getElementById('add-habit-modal').style.display = 'block';
+    }
+
+    // Закрытие модального окна
+    document.querySelector('.close').addEventListener('click', function() {
+        document.getElementById('add-habit-modal').style.display = 'none';
+    });
+
+    // Отправка формы
+    document.getElementById('add-habit-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const habitId = document.getElementById('habit-select').value;
+        const date = document.getElementById('selected-date').value;
+
+        fetch(`/habits/${habitId}/toggle/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                date: date,
+                completed: true
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка при добавлении привычки');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка');
+        });
+    });
+
+    // Удаление привычки
+    document.querySelectorAll('.remove-habit').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const habitId = this.dataset.habitId;
+
+            if (confirm('Удалить эту привычку из календаря?')) {
+                fetch(`/habits/${habitId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                });
+            }
+        });
+    });
+});
 </script>
 {% endblock %}

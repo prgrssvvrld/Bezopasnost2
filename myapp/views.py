@@ -99,31 +99,41 @@ def add_template_habit(request, habit_id):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            date_str = data.get('date')
+            dates = data.get('dates', [])
+            category_id = data.get('category_id')
+
+            if not dates:
+                return JsonResponse({'error': 'Не указаны даты'}, status=400)
 
             template_habit = get_object_or_404(Habit, id=habit_id, is_template=True)
+            category = get_object_or_404(Category, id=category_id) if category_id else None
+            created_habits = []
 
-            user_habit = Habit.objects.create(
-                name=template_habit.name,
-                description=template_habit.description,
-                category=template_habit.category,
-                user=request.user,
-                completed=False,
-            )
-
-            if date_str:
+            for date_str in dates:
                 try:
-                    user_habit.completion_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-                    user_habit.completed = True
-                    user_habit.save()
-                except ValueError:
-                    pass
+                    habit = Habit.objects.create(
+                        name=template_habit.name,
+                        description=template_habit.description,
+                        category=category,
+                        user=request.user,
+                        completed=False,
+                        completion_date=date_str,
+                        is_template=False
+                    )
+                    created_habits.append({
+                        'id': habit.id,
+                        'name': habit.name,
+                        'date': date_str
+                    })
+                except Exception as e:
+                    print(f"Error creating habit for {date_str}: {str(e)}")
+                    continue
 
             return JsonResponse({
-                'id': user_habit.id,
-                'name': user_habit.name,
-                'description': user_habit.description
-            }, status=201)
+                'success': True,
+                'habits': created_habits
+            })
+
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 

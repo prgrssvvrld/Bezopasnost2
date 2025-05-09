@@ -535,10 +535,12 @@
                             <i class="fas fa-gamepad"></i>
                             <span class="category-name">Досуг</span>
                         </div>
+
                         <div class="category-option" data-id="6" data-category="Другое">
                             <i class="fas fa-ellipsis-h"></i>
                             <span class="category-name">Другое</span>
                         </div>
+
                     </div>
                 </div>
 
@@ -547,6 +549,23 @@
     <button class="back-button" id="back-to-categories">Назад к категориям</button>
     <h3>Привычки в выбранной категории:</h3>
     <ul class="habit-list"></ul>
+        <!-- Внутри modal-body, после back-button -->
+<div class="week-calendar">
+    <div class="week-header">Выберите дни недели:</div>
+    <div class="week-days">
+        <div class="day" data-weekday="1">Пн</div>
+        <div class="day" data-weekday="2">Вт</div>
+        <div class="day" data-weekday="3">Ср</div>
+        <div class="day" data-weekday="4">Чт</div>
+        <div class="day" data-weekday="5">Пт</div>
+        <div class="day" data-weekday="6">Сб</div>
+        <div class="day" data-weekday="0">Вс</div>
+    </div>
+</div>
+
+<div class="selected-dates-info">
+    <p>Выбранные дни: <span id="selected-days-text">не выбраны</span></p>
+</div>
 
     <div class="form-group date-picker-container">
         <label for="modal-date" class="form-label">
