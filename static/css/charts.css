@@ -188,6 +188,17 @@
             font-size: 1.3em;
         }
 
+        .navbar--open {
+            border-radius: var(--borderRadius);
+            width: calc(var(--linkHeight) * 1);
+            height: calc(100vh - (var(--spacer) * 25));
+            padding: calc(var(--spacer) / 2) 0;
+        }
+
+        .navbar--open {
+            opacity: 1;
+        }
+
         /* Center hamburger icon when collapsed */
         .navbar::before {
             content: '';
@@ -238,7 +249,6 @@
             border-radius: var(--borderRadius);
             box-shadow: var(--shadow);
             transition: var(--transition);
-            margin-left: calc(var(--linkHeight) * 0.8 + var(--spacer) * 4);
         }
 
         /* Habit tracker styles */
@@ -380,6 +390,19 @@
                 padding-top: calc(var(--linkHeight) * 0.8 + var(--spacer) * 2);
             }
         }
+
+.motivational-banner {
+    text-align: center;
+    padding: 0.1rem 0.8rem;
+    font-size: 0.8rem;
+    font-weight: 70;
+    color: var(--text);
+    background-color: var(--bg-secondary);
+    margin: 2rem auto 0 auto;
+    max-width: 600px;
+    border-radius: var(--borderRadius);
+    box-shadow: var(--shadow);
+}
         .header {
     background: linear-gradient(135deg, var(--accent), var(--accent-hover));
     color: white;

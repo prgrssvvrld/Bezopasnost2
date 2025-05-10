@@ -112,3 +112,58 @@
         text-decoration: underline;
         transition: color 0.3s ease, text-decoration 0.3s ease;
     }
+
+    .btn-primary {
+    background-color: #ff6b00; /* Оранжевый */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-weight: 500;
+    border-radius: var(--borderRadius);
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary:hover {
+    background-color: #ff7b00; /* Темнее при наведении */
+    text-decoration: none;
+}
+
+.profile-message {
+    text-align: center;
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    color: var(--text-primary, #333);
+    background-color: var(--bg-secondary, #f9f9f9);
+    padding: 15px;
+    border-radius: var(--borderRadius);
+    box-shadow: var(--shadow);
+}
+
+
+
+.dark-mode .profile-message {
+    color: #f0f0f0;
+    background-color: var(--bg-secondary);
+    box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+}
+
+.btn-danger {
+    background-color: #e53e3e; /* Красный */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-weight: 500;
+    border-radius: var(--borderRadius);
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+    display: inline-block;
+    margin-top: 10px;
+}
+
+.btn-danger:hover {
+    background-color: #c53030; /* Темнее красный при наведении */
+}

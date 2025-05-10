@@ -93,3 +93,22 @@
     .text-muted {
         color: #6c757d;
     }
+
+    .btn-primary {
+    background-color: #ff6b00; /* Оранжевый */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-weight: 500;
+    border-radius: var(--borderRadius);
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary:hover {
+    background-color: #ff7b00; /* Темнее при наведении */
+    text-decoration: none;
+}
+

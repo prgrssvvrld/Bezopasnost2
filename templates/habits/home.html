@@ -2,6 +2,19 @@
 
 {% block header %}Трекер привычек{% endblock %}
 {% load static %}
+
+     <script>
+        (function () {
+            try {
+                const savedTheme = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+                if (isDark) {
+                    document.documentElement.classList.add('dark-mode');
+                }
+            } catch (e) {}
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Трекер привычек - Главная</title>
@@ -9,9 +22,10 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/home.css' %}">
 {% endblock %}
    {% block content %}
-
- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
+
+
 
     <div class="user-icon">
         <a href="{% url 'profile' %}">
@@ -31,7 +45,7 @@
                 </a>
             </li>
             <li class="navbar__item">
-                <a href="{% url 'dashboard' %}" class="navbar__link" title="Календарь">
+                <a href="{% url 'dashboard' %}" class="navbar__link" title="Добавить привычку">
                     <i data-feather="edit-3"></i>
                 </a>
             </li>
@@ -143,60 +157,45 @@
     </main>
 
     <script>
-        feather.replace(); // <-- снова перерисовать все иконки
+<script src="https://unpkg.com/feather-icons"></script>
+    <script>
+    const themeToggle = document.getElementById('theme-toggle');
+    const root = document.documentElement;
 
-        // Переключение темы
-        const themeToggle = document.getElementById('theme-toggle');
-        themeToggle.addEventListener('click', (e) => {
-            e.preventDefault();
-            document.body.classList.toggle('dark-mode');
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
 
-            // Сохранение предпочтения темы в localStorage
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('darkMode', isDark);
+    updateMoonIcon(isDark);
 
-            // Изменение иконки в зависимости от темы
-            const icon = themeToggle.querySelector('i');
-            if (isDark) {
-                feather.icons['sun'].replace(icon);
-                themeToggle.setAttribute('title', 'Светлая тема');
-            } else {
-                feather.icons['moon'].replace(icon);
-                themeToggle.setAttribute('title', 'Тёмная тема');
-            }
-        });
+    themeToggle.addEventListener('click', () => {
+        root.classList.toggle('dark-mode');
+        const isDark = root.classList.contains('dark-mode');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        updateMoonIcon(isDark);
+    });
 
-        // Проверка сохранённой темы при загрузке
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-            const icon = themeToggle.querySelector('i');
-            feather.icons['sun'].replace(icon);
-            themeToggle.setAttribute('title', 'Светлая тема');
-        }
+    function updateMoonIcon(isDark) {
+        const iconHtml = isDark
+            ? feather.icons.sun.toSvg()
+            : feather.icons.moon.toSvg();
+        themeToggle.innerHTML = iconHtml;
+    }
 
-        // Обработка кликов по привычкам
-        document.querySelectorAll('.habit-check').forEach(check => {
-            check.addEventListener('click', function() {
-                this.classList.toggle('checked');
-            });
-        });
+    feather.replace();
 
-        // Для мобильных устройств - открытие по клику
-        const navbar = document.getElementById('navbar');
+    let nav = document.querySelector('.navbar');
+    let timeout;
 
-        if (window.innerWidth <= 768) {
-            navbar.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.toggle('navbar--open');
-                }
-            });
+    nav.addEventListener('mouseenter', () => {
+        clearTimeout(timeout);
+        nav.classList.add('navbar--open');
+    });
 
-            // Закрытие меню при клике вне его области
-            document.addEventListener('click', function(event) {
-                if (!navbar.contains(event.target) && !event.target.classList.contains('navbar__link')) {
-                    navbar.classList.remove('navbar--open');
-                }
-            });
-        }
+    nav.addEventListener('mouseleave', () => {
+        timeout = setTimeout(() => {
+            nav.classList.remove('navbar--open');
+        }, 500); // Задержка 0.5 секунды
+    });
     </script>
 {% endblock %}

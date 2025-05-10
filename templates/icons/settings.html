@@ -19,32 +19,50 @@
             <span class="detail-label">Фамилия:</span>
             <span class="detail-value">{{ user.last_name }}</span>
         </div>
-        <div class="form-group">
-            <label for="id_email">Email:</label>
-            {{ user_form.email }}
+        <div class="detail-item">
+            <span class="detail-label">Email:</span>
+            <span class="detail-value">{{ user.email }}</span>
         </div>
-        <button type="submit" class="save-btn">Сохранить изменения</button>
     </form>
 
     <hr>
 
     <h3>Изменить пароль</h3>
-    <form method="post" action="{% url 'change_password' %}" class="settings-form">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="id_old_password">Текущий пароль:</label>
+<form method="post" action="{% url 'change_password' %}" class="settings-form">
+    {% csrf_token %}
+
+    <div class="form-group">
+        <label for="{{ password_form.old_password.id_for_label }}">Текущий пароль:</label>
+        <div class="password-wrapper">
             {{ password_form.old_password }}
+            <button type="button" onclick="togglePassword('{{ password_form.old_password.id_for_label }}')">
+                <i class="fas fa-eye eye-icon"></i>
+            </button>
         </div>
-        <div class="form-group">
-            <label for="id_new_password1">Новый пароль:</label>
+    </div>
+
+    <div class="form-group">
+        <label for="{{ password_form.new_password1.id_for_label }}">Новый пароль:</label>
+        <div class="password-wrapper">
             {{ password_form.new_password1 }}
+            <button type="button" onclick="togglePassword('{{ password_form.new_password1.id_for_label }}')">
+                <i class="fas fa-eye eye-icon"></i>
+            </button>
         </div>
-        <div class="form-group">
-            <label for="id_new_password2">Подтвердите пароль:</label>
+    </div>
+
+    <div class="form-group">
+        <label for="{{ password_form.new_password2.id_for_label }}">Подтвердите пароль:</label>
+        <div class="password-wrapper">
             {{ password_form.new_password2 }}
+            <button type="button" onclick="togglePassword('{{ password_form.new_password2.id_for_label }}')">
+                <i class="fas fa-eye eye-icon"></i>
+            </button>
         </div>
-        <button type="submit" class="save-btn">Сменить пароль</button>
-    </form>
+    </div>
+
+    <button type="submit" class="save-button">Сменить пароль</button>
+</form>
 
     {% if messages %}
         <ul class="messages">
@@ -53,5 +71,33 @@
             {% endfor %}
         </ul>
     {% endif %}
+
+    <div class="user-icon">
+    <a href="{% url 'profile' %}">
+        {% if request.user.profile_picture %}
+            <img src="{{ request.user.profile_picture.url }}" alt="Profile">
+        {% else %}
+            <i data-feather="user"></i>
+        {% endif %}
+    </a>
 </div>
+
+</div>
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script>
+function togglePassword(fieldId) {
+    const passwordField = document.getElementById(fieldId);
+    const eyeIcon = passwordField.parentElement.querySelector('.eye-icon');
+
+    if (passwordField.type === "password") {
+        passwordField.type = "text";
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordField.type = "password";
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+    }
+}
+</script>
 {% endblock %}

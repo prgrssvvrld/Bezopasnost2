@@ -1,11 +1,21 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <script>
+    (function () {
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isLight = savedTheme === 'light' || (!savedTheme && !prefersDark);
+        document.documentElement.classList.add(isLight ? 'light-theme' : 'dark-theme');
+    })();
+</script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HabitZone | Трекер привычек</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
+
     <style>
         :root {
             --borderRadius: 12px;
@@ -31,6 +41,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            transition: background-color var(--timing), color var(--timing);
         }
 
         .container {
@@ -59,6 +70,8 @@
             height: auto;
             border-radius: var(--borderRadius);
             box-shadow: var(--shadow-md);
+            background-color: #ffffff; /* всегда белый фон */
+            filter: none !important;   /* убрать возможные фильтры темной темы */
         }
 
         .hero-content {
@@ -149,6 +162,30 @@
             font-size: 0.9rem;
         }
 
+        .theme-toggle {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .light-theme {
+            --bg: #f8fafc;
+            --bg-secondary: #ffffff;
+            --text: #1a202c;
+            --text-light: #4a5568;
+        }
+
+        .dark-theme {
+            --bg: #1a202c;
+            --bg-secondary: #2d3748;
+            --text: #edf2f7;
+            --text-light: #a0aec0;
+        }
+
         @media (max-width: 768px) {
             .hero {
                 flex-direction: column;
@@ -165,12 +202,31 @@
             }
         }
     </style>
+    <script>
+    // Инициализация темы (светлая по умолчанию)
+    (function () {
+        try {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isLight = savedTheme === 'light' || (!savedTheme && !prefersDark);
+
+            if (isLight) {
+                document.body.classList.add('light-theme');
+            } else {
+                document.body.classList.add('dark-theme');
+            }
+        } catch (e) {
+            console.error('Theme init error:', e);
+        }
+    })();
+    </script>
 </head>
 <body>
+    <button id="theme-toggle" class="theme-toggle" title="Сменить тему"></button>
+
     <div class="container">
         <div class="hero">
             <div class="hero-image">
-                <!-- Минималистичная иллюстрация привычек -->
                 <img src="https://illustrations.popsy.co/amber/digital-nomad.svg" alt="Трекер привычек">
             </div>
             <div class="hero-content">
@@ -198,11 +254,45 @@
     </div>
 
     <footer>
-        © 2023 HabitZone. Все права защищены.
+        © 2025 HabitZone. Все права защищены.
     </footer>
 
+    <script src="https://unpkg.com/feather-icons"></script>
     <script>
-        feather.replace();
+        const themeToggle = document.getElementById('theme-toggle');
+
+        function updateIcon(isLight) {
+            const iconHtml = isLight
+                ? feather.icons.moon.toSvg()
+                : feather.icons.sun.toSvg();
+            themeToggle.innerHTML = iconHtml;
+            feather.replace();
+        }
+
+        function setInitialTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isLight = savedTheme === 'light' || (!savedTheme && !prefersDark);
+
+            if (isLight) {
+                document.body.classList.add('light-theme');
+            } else {
+                document.body.classList.remove('light-theme');
+            }
+
+            // Показываем иконку для переключения темы (на противоположную)
+            updateIcon(!isLight); // показываем луну, если тема светлая
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const isCurrentlyLight = document.body.classList.contains('light-theme');
+            document.body.classList.toggle('light-theme', !isCurrentlyLight);
+            document.body.classList.toggle('dark-theme', isCurrentlyLight);
+            localStorage.setItem('theme', !isCurrentlyLight ? 'light' : 'dark');
+            updateIcon(!isCurrentlyLight);
+        });
+
+        setInitialTheme();
     </script>
 </body>
 </html>

@@ -365,6 +365,9 @@
             height: 100%;
             object-fit: cover;
         }
+        .btn-category:hover {
+    box-shadow: var(--shadow);
+}
 
     </style>
 </head>
@@ -389,7 +392,7 @@
                 </a>
             </li>
             <li class="navbar__item">
-                <a href="{% url 'dashboard' %}" class="navbar__link" title="Календарь">
+                <a href="{% url 'dashboard' %}" class="navbar__link" title="Добавить привычку">
                     <i data-feather="edit-3"></i>
                 </a>
             </li>
@@ -459,8 +462,8 @@
                         <input type="date" name="date" id="id_date" class="form-input">
                     </label>
                 </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-plus-circle"></i> Добавить привычку
+                 <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus-circle" style="margin-right: 6px;"></i> Добавить привычку
                 </button>
             </form>
         </div>
@@ -499,9 +502,7 @@
             {% endif %}
         </div>
 
-        <a href="{% url 'logout' %}" class="logout-link">
-            <i class="fas fa-sign-out-alt" style="margin-right: 6px;"></i>Выйти
-        </a>
+
     </div>
 
     <!-- Модальное окно для выбора категории -->
@@ -535,12 +536,10 @@
                             <i class="fas fa-gamepad"></i>
                             <span class="category-name">Досуг</span>
                         </div>
-
                         <div class="category-option" data-id="6" data-category="Другое">
                             <i class="fas fa-ellipsis-h"></i>
                             <span class="category-name">Другое</span>
                         </div>
-
                     </div>
                 </div>
 
@@ -549,7 +548,7 @@
     <button class="back-button" id="back-to-categories">Назад к категориям</button>
     <h3>Привычки в выбранной категории:</h3>
     <ul class="habit-list"></ul>
-        <!-- Внутри modal-body, после back-button -->
+         <!-- Внутри modal-body, после back-button -->
 <div class="week-calendar">
     <div class="week-header">Выберите дни недели:</div>
     <div class="week-days">
@@ -566,6 +565,7 @@
 <div class="selected-dates-info">
     <p>Выбранные дни: <span id="selected-days-text">не выбраны</span></p>
 </div>
+
 
     <div class="form-group date-picker-container">
         <label for="modal-date" class="form-label">

@@ -50,20 +50,22 @@
     box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
 }
 
-.save-btn {
+.save-button {
     background-color: #ff6b00;
     color: white;
-    padding: 0.75rem 1.5rem;
     border: none;
-    border-radius: 8px;
-    font-size: 1rem;
+    padding: 10px 20px;
     font-weight: 500;
+    border-radius: var(--borderRadius);
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
     cursor: pointer;
-    transition: background-color 0.2s;
 }
 
-.save-btn:hover {
-    background-color: #ff7b22;
+.save-button:hover {
+    background-color: #ff7b00;
 }
 
 hr {
@@ -105,4 +107,67 @@ hr {
     background-color: #fff5f5;
     color: #c53030;
     border: 1px solid #fed7d7;
+}
+
+.user-icon {
+            position: absolute;
+            top: calc(var(--spacer) * 2);
+            right: calc(var(--spacer) * 2);
+            width: calc(var(--linkHeight) * 0.8);
+            height: calc(var(--linkHeight) * 0.8);
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-nav);
+            box-shadow: var(--shadow);
+            z-index: 1001;
+            transition: var(--transition);
+        }
+
+        .user-icon a {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+.password-wrapper {
+    width: 400px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-wrapper input {
+    flex: 1;
+}
+
+.password-wrapper button {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    top: 21px; /* Расположение глазка верх-низ */
+    transform: translateY(-50%);
+}
+
+.eye-icon {
+    font-size: 1rem;
+    color: #ff6b00;
+    position: relative;
 }
