@@ -165,20 +165,52 @@
         }
 
         /* Заголовок */
-        .header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
+        .headers {
+    text-align: center;
+    margin: 0rem auto;
+    padding: 0 1rem;
+    max-width: 800px;
+    position: relative;
+}
 
-        .header h1 {
-            font-size: 2.2rem;
-            color: var(--accent);
-        }
+.headers h1 {
+    font-size: 2.2rem;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    position: relative;
+    display: inline-block;
+}
 
-        .header p {
-            font-size: 1.1rem;
-            color: var(--text);
-        }
+
+
+.headers p {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    margin-top: 1rem;
+    line-height: 1.6;
+}
+
+/* Адаптивность для заголовка */
+@media (max-width: 768px) {
+    .headers {
+        margin: 1.5rem auto;
+    }
+
+    .headers h1 {
+        font-size: 1.8rem;
+    }
+
+    .headers h1::after {
+        bottom: -8px;
+        width: 50px;
+        height: 2px;
+    }
+
+    .headers p {
+        font-size: 1rem;
+    }
+}
 
         /* Карточки статистики */
         .stats-cards {

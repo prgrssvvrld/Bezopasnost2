@@ -1,16 +1,17 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    {% load static %}
+{% extends "habits/base.html" %}
+
+{% block header %}Трекер привычек{% endblock %}
+{% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Трекер привычек - Главная</title>
+{% block extra_css %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/home.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/feather-icons"></script>
-</head>
-<body>
+{% endblock %}
+   {% block content %}
 
+ <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
 
     <div class="user-icon">
         <a href="{% url 'profile' %}">
@@ -63,8 +64,8 @@
     </nav>
 
     <main>
-        <div class="header">
-            <h1>Добро пожаловать в трекер привычек</h1>
+        <div class="headers">
+            <h1>Добро пожаловать, {{ request.user.first_name|default:request.user.username }}</h1>
             <p>Следите за своими привычками и улучшайте свою жизнь</p>
         </div>
 
@@ -198,5 +199,4 @@
             });
         }
     </script>
-</body>
-</html>
+{% endblock %}

@@ -201,12 +201,17 @@ select.form-select, input.form-input, textarea.form-textarea {
             box-shadow: var(--shadow);
             transition: var(--transition);
         }
-
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding-left: calc(var(--linkHeight) * 0.8 + var(--spacer) * 4);
-        }
+    .header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--spacer);
+}
 
         .logo {
             font-size: 1.75rem;
@@ -413,14 +418,29 @@ select.form-select, input.form-input, textarea.form-textarea {
                 right: calc(var(--spacer) * 1.5);
             }
 
-            .header-content, .container {
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
+            .header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--spacer);
+}
 
             .header-content {
-                padding-top: calc(var(--linkHeight) * 0.8 + var(--spacer) * 2);
-            }
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--spacer);
+}
             .profile-header {
     display: flex;
     align-items: center;
@@ -659,4 +679,103 @@ select.form-select, input.form-input, textarea.form-textarea {
     color: white;
     margin-left: 0.3rem;
     cursor: pointer;
+}
+.header {
+    background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+    color: white;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: var(--transition);
+}
+
+.header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+    transform: rotate(30deg);
+    z-index: 0;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--spacer);
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 2.2rem;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    display: inline-block;
+}
+
+.header h1::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: white;
+    border-radius: 3px;
+}
+
+/* Анимация при наведении */
+.header:hover::before {
+    animation: shine 3s ease infinite;
+}
+
+@keyframes shine {
+    0% {
+        transform: rotate(30deg) translateX(-100%);
+    }
+    100% {
+        transform: rotate(30deg) translateX(100%);
+    }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .header {
+        padding: 1.5rem 1rem;
+    }
+
+    .header h1 {
+        font-size: 1.8rem;
+    }
+
+    .header h1::after {
+        bottom: -8px;
+        width: 50px;
+        height: 2px;
+    }
+
+    .header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--spacer);
+}
 }
