@@ -24,7 +24,21 @@ def welcome_page(request):
     return render(request, 'registration/welcome.html')
 
 def home_page(request):
-    return render(request, 'habits/home.html')
+    today = timezone.now().date()
+    habits = Habit.objects.filter(user=request.user)
+    habits_today = habits.filter(weekdays__day_of_week=today.weekday()).distinct()
+    completed_today = habits_today.filter(completion_date=today)
+
+    return render(request, 'habits/home.html', {
+        'habits': habits,
+        'habits_today': habits_today,
+        'completed_today': completed_today
+    })
+
+def toggle_habit(request, habit_id):
+    habit = get_object_or_404(Habit, id=habit_id, user=request.user)
+    habit.toggle_completion()
+    return JsonResponse({'success': True})
 
 @login_required
 def toggle_habit_completion(request, habit_id):
