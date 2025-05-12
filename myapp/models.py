@@ -50,6 +50,20 @@ class Category(models.Model):
         return self.name
 
 
+class Weekday(models.Model):
+    day_of_week = models.IntegerField(choices=[
+        (0, 'Понедельник'),
+        (1, 'Вторник'),
+        (2, 'Среда'),
+        (3, 'Четверг'),
+        (4, 'Пятница'),
+        (5, 'Суббота'),
+        (6, 'Воскресенье'),
+    ])
+
+    def __str__(self):
+        return self.get_day_of_week_display()
+
 class Habit(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -57,14 +71,14 @@ class Habit(models.Model):
         null=True,  # <- это разрешает хранить NULL в БД
         blank=True  # <- это позволяет оставить поле пустым в админке
     )
-    category = models.ForeignKey(Category, on_delete=models.SET_DEFAULT, default=1)  # Ссылка на категорию
+    category = models.ForeignKey(Category, on_delete=models.SET_DEFAULT, default=1)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     completed = models.BooleanField(default=False)
     completion_date = models.DateField(null=True, blank=True)
-    weekdays = models.JSONField(null=True, blank=True)  # Для хранения дней недели [1,3,5]
-    is_template = models.BooleanField(default=False)  # 👈 добавляем
+    weekdays = models.ManyToManyField(Weekday, blank=True)
+    is_template = models.BooleanField(default=False)
 
     def toggle_completion(self, date=None):
         if not date:

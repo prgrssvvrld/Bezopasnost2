@@ -85,8 +85,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateSelectedDaysText() {
         const daysMap = {
-            '0': 'Вс', '1': 'Пн', '2': 'Вт', '3': 'Ср',
-            '4': 'Чт', '5': 'Пт', '6': 'Сб'
+            '0': 'Пн', '1': 'Вт', '2': 'Ср',
+            '3': 'Чт', '4': 'Пт', '5': 'Сб', '6': 'Вс',
         };
 
         const selectedText = state.selectedWeekdays.length > 0
@@ -95,6 +95,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
         document.getElementById('selected-days-text').textContent = selectedText;
     }
+
+    document.getElementById('add-habit-in-modal').addEventListener('click', function() {
+    // Проверяем, что категория выбрана
+    if (!state.currentCategoryId) {
+        alert('Пожалуйста, сначала выберите категорию');
+        return;
+    }
+
+    // Получаем данные о выбранной категории
+    const selectedOption = document.querySelector('.category-option.active');
+    if (selectedOption) {
+        const categoryId = selectedOption.getAttribute('data-id');
+        const categoryName = selectedOption.getAttribute('data-category');
+
+        // Заполняем основную форму
+        document.getElementById('id_category').value = categoryId;
+        document.getElementById('category-text').textContent = categoryName;
+
+        // Закрываем модальное окно
+        closeModal();
+
+        // Прокручиваем к форме (опционально)
+        document.getElementById('habit-form').scrollIntoView({ behavior: 'smooth' });
+    }
+});
 
     // Загрузка привычек
     function loadHabitsForCategory(categoryId) {

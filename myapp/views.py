@@ -59,36 +59,63 @@ def api_add_habit(request):
         name = data.get('name')
         description = data.get('description')
         date_str = data.get('date')
+        category_id = data.get('category_id')  # Получаем category_id из запроса
+        weekdays = data.get('weekdays', [])  # Получаем дни недели из запроса
 
         if not name:
             return JsonResponse({'success': False, 'message': 'Название обязательно'}, status=400)
 
+        # Получаем категорию, если она передана в запросе
+        category = None
+        if category_id:
+            try:
+                category = Category.objects.get(id=category_id)
+            except Category.DoesNotExist:
+                return JsonResponse({'success': False, 'message': 'Категория не найдена'}, status=400)
+
+        # Создание привычки
         habit = Habit.objects.create(
             name=name,
             description=description,
             user=request.user,
-            completed=False,
+            category=category,  # Используем полученную категорию
+            completed=False,  # Привычка по умолчанию не завершена
         )
 
-        # Если дата указана, устанавливаем ее
+        # Устанавливаем дни недели для привычки
+        if weekdays:
+            for weekday in weekdays:
+                try:
+                    day = Weekday.objects.get(day_of_week=weekday)
+                    habit.weekdays.add(day)
+                except Weekday.DoesNotExist:
+                    return JsonResponse({'success': False, 'message': f'Некорректный день недели: {weekday}'}, status=400)
+
+        # Если дата указана, устанавливаем completion_date
         if date_str:
             try:
                 habit.completion_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-                habit.completed = True
+                habit.completed = True  # Привычка считается выполненной, если дата установлена
                 habit.save()
             except ValueError:
-                pass
+                return JsonResponse({'success': False, 'message': 'Неверный формат даты'}, status=400)
 
+        # Возвращаем успешный ответ с данными о привычке
         return JsonResponse({
             'success': True,
             'habit': {
                 'id': habit.id,
                 'name': habit.name,
                 'description': habit.description,
-                'completion_date': habit.completion_date.strftime('%Y-%m-%d') if habit.completion_date else None
+                'category': habit.category.id if habit.category else None,
+                'completion_date': habit.completion_date.strftime('%Y-%m-%d') if habit.completion_date else None,
+                'completed': habit.completed,
+                'weekdays': [day.day_of_week for day in habit.weekdays.all()]  # Возвращаем выбранные дни недели
             }
         }, status=201)
 
+    except Category.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Категория не найдена'}, status=400)
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
