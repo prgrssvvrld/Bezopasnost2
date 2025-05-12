@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
-from .models import Habit, Category
+from .models import Habit, Category, Weekday
 from .forms import HabitForm, ProfileForm
 from django.contrib.auth import authenticate, login
 from .forms import CustomUserCreationForm
@@ -126,12 +126,13 @@ def add_template_habit(request, habit_id):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            weekdays = data.get('weekdays', [])  # Получаем дни недели (например, [1,3,5])
+            weekdays_ids = data.get('weekdays', [])  # Получаем ID дней недели (например, [1, 3, 5])
             category_id = data.get('category_id')
 
-            if not weekdays:
+            if not weekdays_ids:
                 return JsonResponse({'error': 'Не указаны дни недели'}, status=400)
 
+            # Получаем шаблон привычки
             template_habit = get_object_or_404(Habit, id=habit_id, is_template=True)
             category = get_object_or_404(Category, id=category_id) if category_id else None
 
@@ -140,13 +141,15 @@ def add_template_habit(request, habit_id):
                 user=request.user,
                 name=template_habit.name,
                 category=category,
-                is_template=False,
-                weekdays__isnull=False
+                is_template=False
             ).first()
+
+            # Получаем объекты Weekday для выбранных дней
+            weekdays = Weekday.objects.filter(id__in=weekdays_ids)
 
             if existing_habit:
                 # Обновляем существующую привычку
-                existing_habit.weekdays = weekdays
+                existing_habit.weekdays.set(weekdays)  # Используем set для обновления связи
                 existing_habit.save()
                 return JsonResponse({
                     'success': True,
@@ -160,9 +163,10 @@ def add_template_habit(request, habit_id):
                     description=template_habit.description,
                     category=category,
                     user=request.user,
-                    is_template=False,
-                    weekdays=weekdays  # Сохраняем выбранные дни недели
+                    is_template=False
                 )
+                habit.weekdays.set(weekdays)  # Сохраняем выбранные дни недели
+                habit.save()
                 return JsonResponse({
                     'success': True,
                     'message': 'Привычка создана',
