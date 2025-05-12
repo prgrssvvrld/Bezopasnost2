@@ -1,159 +1,86 @@
 // main_page.js
 document.addEventListener('DOMContentLoaded', function() {
-    // Инициализация переменных
-    let selectedWeekdays = [];
-    let currentCategoryId = null;
+    // Состояние приложения
+    const state = {
+        selectedWeekdays: [],
+        currentCategoryId: null,
+        isSubmitting: false,
+        lastSubmittedHabit: null
+    };
 
-    // Элементы модального окна
+    // Инициализация модального окна
     const modal = document.getElementById('category-modal');
     const openBtn = document.getElementById('open-category-modal');
     const closeBtn = document.getElementById('close-category-modal');
 
-    // Показать модальное окно
-    openBtn.addEventListener('click', function() {
+    // Показать/скрыть модальное окно
+    openBtn.addEventListener('click', showModal);
+    closeBtn.addEventListener('click', closeModal);
+
+    function showModal() {
         modal.style.display = 'flex';
         setTimeout(() => {
             modal.classList.add('show');
             document.getElementById('category-options-container').classList.add('show');
+            resetSelectedDays();
         }, 10);
-    });
+    }
 
-    // Закрыть модальное окно
     function closeModal() {
         modal.classList.remove('show');
         setTimeout(() => {
             modal.style.display = 'none';
+            resetSelectedDays();
         }, 300);
     }
 
-    closeBtn.addEventListener('click', closeModal);
-
-    // Обработка выбора категории
-    const categoryOptions = document.querySelectorAll('.category-option');
-    categoryOptions.forEach(option => {
+    // Работа с категориями
+    document.querySelectorAll('.category-option').forEach(option => {
         option.addEventListener('click', function() {
-            categoryOptions.forEach(opt => opt.classList.remove('active'));
+            document.querySelectorAll('.category-option').forEach(opt => opt.classList.remove('active'));
             this.classList.add('active');
-            currentCategoryId = this.getAttribute('data-id');
+            state.currentCategoryId = this.getAttribute('data-id');
 
-            // Показываем контейнер с привычками
             document.getElementById('habit-list-container').classList.add('show');
             document.getElementById('category-options-container').classList.remove('show');
 
-            // Загружаем привычки для выбранной категории
-            loadHabitsForCategory(currentCategoryId);
+            loadHabitsForCategory(state.currentCategoryId);
+            resetSelectedDays();
         });
     });
 
-    // Назад к категориям
     document.getElementById('back-to-categories').addEventListener('click', function() {
         document.getElementById('habit-list-container').classList.remove('show');
         document.getElementById('category-options-container').classList.add('show');
+        resetSelectedDays();
     });
-
-    // Инициализация календаря недели
-    setupWeekCalendar();
-
-    // Функция загрузки привычек
-    function loadHabitsForCategory(categoryId) {
-        fetch(`/api/habits/category/${categoryId}/`)
-            .then(response => response.json())
-            .then(data => {
-                const habitList = document.querySelector('#habit-list-container .habit-list');
-                habitList.innerHTML = '';
-
-                if (data.habits && data.habits.length > 0) {
-                    data.habits.forEach(habit => {
-                        const li = document.createElement('li');
-                        li.className = 'habit-item';
-                        li.innerHTML = `
-                            <div class="habit-name">${habit.name}</div>
-                            ${habit.description ? `<div class="habit-description">${habit.description}</div>` : ''}
-                            <div class="habit-actions-modal">
-                                <button class="btn btn-add add-existing-habit-btn" data-id="${habit.id}">
-                                    <i class="fas fa-plus"></i> Добавить
-                                </button>
-                            </div>
-                        `;
-                        habitList.appendChild(li);
-                    });
-                } else {
-                    habitList.innerHTML = '<li class="no-habits">Нет привычек в этой категории</li>';
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка загрузки привычек:', error);
-            });
-    }
-
-    // Обработчик для кнопок "Добавить"
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('add-existing-habit-btn') ||
-            e.target.closest('.add-existing-habit-btn')) {
-            const btn = e.target.classList.contains('add-existing-habit-btn')
-                ? e.target
-                : e.target.closest('.add-existing-habit-btn');
-            const habitId = btn.getAttribute('data-id');
-            addExistingHabit(habitId);
-        }
-    });
-
-    // Функция добавления привычки
-    function addExistingHabit(habitId) {
-        if (selectedWeekdays.length === 0) {
-            alert('Выберите хотя бы один день недели!');
-            return;
-        }
-
-        const dates = getDatesForSelectedWeekdays();
-
-        fetch(`/api/habits/add-template/${habitId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken(),
-            },
-            body: JSON.stringify({
-                dates: dates,
-                category_id: currentCategoryId
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Привычка успешно добавлена!');
-                closeModal();
-                window.location.reload();
-            } else {
-                throw new Error(data.message || 'Ошибка при добавлении привычки');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Ошибка: ' + error.message);
-        });
-    }
 
     // Календарь недели
     function setupWeekCalendar() {
-        const days = document.querySelectorAll('.week-days .day');
-
-        days.forEach(day => {
+        document.querySelectorAll('.week-days .day').forEach(day => {
             day.addEventListener('click', function() {
                 this.classList.toggle('selected');
                 const weekday = this.dataset.weekday;
 
                 if (this.classList.contains('selected')) {
-                    if (!selectedWeekdays.includes(weekday)) {
-                        selectedWeekdays.push(weekday);
+                    if (!state.selectedWeekdays.includes(weekday)) {
+                        state.selectedWeekdays.push(weekday);
                     }
                 } else {
-                    selectedWeekdays = selectedWeekdays.filter(d => d !== weekday);
+                    state.selectedWeekdays = state.selectedWeekdays.filter(d => d !== weekday);
                 }
 
                 updateSelectedDaysText();
             });
         });
+    }
+
+    function resetSelectedDays() {
+        state.selectedWeekdays = [];
+        document.querySelectorAll('.week-days .day').forEach(day => {
+            day.classList.remove('selected');
+        });
+        updateSelectedDaysText();
     }
 
     function updateSelectedDaysText() {
@@ -162,23 +89,111 @@ document.addEventListener('DOMContentLoaded', function() {
             '4': 'Чт', '5': 'Пт', '6': 'Сб'
         };
 
-        const selectedText = selectedWeekdays.length > 0
-            ? selectedWeekdays.map(d => daysMap[d]).join(', ')
+        const selectedText = state.selectedWeekdays.length > 0
+            ? state.selectedWeekdays.map(d => daysMap[d]).join(', ')
             : 'не выбраны';
 
         document.getElementById('selected-days-text').textContent = selectedText;
     }
 
+    // Загрузка привычек
+    function loadHabitsForCategory(categoryId) {
+        fetch(`/api/habits/category/${categoryId}/`)
+            .then(response => response.json())
+            .then(data => {
+                const habitList = document.querySelector('#habit-list-container .habit-list');
+                habitList.innerHTML = '';
+
+                if (data.habits?.length > 0) {
+                    data.habits.forEach(habit => {
+                        const li = document.createElement('li');
+                        li.className = 'habit-item';
+                        li.innerHTML = `
+                            <div class="habit-name">${habit.name}</div>
+                            ${habit.description ? `<div class="habit-description">${habit.description}</div>` : ''}
+                            <button class="btn btn-add add-existing-habit-btn" data-id="${habit.id}">
+                                <i class="fas fa-plus"></i> Добавить
+                            </button>
+                        `;
+                        habitList.appendChild(li);
+                    });
+                } else {
+                    habitList.innerHTML = '<li class="no-habits">Нет привычек в этой категории</li>';
+                }
+            })
+            .catch(console.error);
+    }
+
+    // Обработка добавления привычки
+    document.getElementById('habit-list-container').addEventListener('click', function(e) {
+        const btn = e.target.closest('.add-existing-habit-btn');
+        if (btn && !state.isSubmitting) {
+            const habitId = btn.getAttribute('data-id');
+
+            // Проверка на повторное нажатие для той же привычки
+            if (state.lastSubmittedHabit === habitId) {
+                alert('Эта привычка уже добавлена. Пожалуйста, выберите другую или измените дни.');
+                return;
+            }
+
+            addExistingHabit(habitId);
+        }
+    });
+
+    async function addExistingHabit(habitId) {
+    if (state.selectedWeekdays.length === 0) {
+        alert('Выберите хотя бы один день недели!');
+        return;
+    }
+
+    if (state.isSubmitting) return;
+    state.isSubmitting = true;
+
+    const btn = document.querySelector(`.add-existing-habit-btn[data-id="${habitId}"]`);
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Добавление...';
+
+    try {
+        const response = await fetch(`/api/habits/add-template/${habitId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+            },
+            body: JSON.stringify({
+                weekdays: state.selectedWeekdays, // Отправляем только дни недели
+                category_id: state.currentCategoryId
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert(data.message);
+            closeModal();
+            window.location.reload(); // Обновляем страницу
+        } else {
+            throw new Error(data.error || 'Ошибка при добавлении привычки');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Ошибка: ' + error.message);
+    } finally {
+        state.isSubmitting = false;
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-plus"></i> Добавить';
+    }
+}
+
     function getDatesForSelectedWeekdays() {
         const today = new Date();
         const dates = [];
 
-        // Добавляем даты на 4 недели вперед
         for (let i = 0; i < 28; i++) {
-            const date = new Date();
+            const date = new Date(today);
             date.setDate(today.getDate() + i);
 
-            if (selectedWeekdays.includes(date.getDay().toString())) {
+            if (state.selectedWeekdays.includes(date.getDay().toString())) {
                 dates.push(date.toISOString().split('T')[0]);
             }
         }
@@ -186,50 +201,13 @@ document.addEventListener('DOMContentLoaded', function() {
         return dates;
     }
 
-    // Функция для получения CSRF токена
     function getCSRFToken() {
-        const cookieValue = document.cookie
+        return document.cookie
             .split('; ')
             .find(row => row.startsWith('csrftoken='))
             ?.split('=')[1];
-        return cookieValue;
     }
+
+    // Инициализация
+    setupWeekCalendar();
 });
-function addExistingHabit(habitId) {
-    if (selectedWeekdays.length === 0) {
-        alert('Выберите хотя бы один день недели!');
-        return;
-    }
-
-    const dates = getDatesForSelectedWeekdays();
-
-    fetch(`/api/habits/add-template/${habitId}/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken(),
-        },
-        body: JSON.stringify({
-            dates: dates,
-            category_id: currentCategoryId
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Привычка успешно добавлена!');
-            closeModal();
-            // Обновляем календарь на другой странице
-            if (window.opener) {
-                window.opener.refreshCalendar();
-            }
-            window.location.reload();
-        } else {
-            throw new Error(data.message || 'Ошибка при добавлении привычки');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Ошибка: ' + error.message);
-    });
-}

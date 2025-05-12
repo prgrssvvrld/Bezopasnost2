@@ -63,6 +63,7 @@ class Habit(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     completed = models.BooleanField(default=False)
     completion_date = models.DateField(null=True, blank=True)
+    weekdays = models.JSONField(null=True, blank=True)  # Для хранения дней недели [1,3,5]
     is_template = models.BooleanField(default=False)  # 👈 добавляем
 
     def toggle_completion(self, date=None):

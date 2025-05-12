@@ -78,7 +78,6 @@
 
     <div class="header">
         <div class="header-content">
-            <div class="logo">Проект СФУ</div>
             <h1>Редактировать привычку</h1>
         </div>
     </div>
@@ -94,6 +93,18 @@
                 <label for="id_description">Описание привычки</label>
                 <textarea name="description" id="id_description">{{ form.description.value|default:'' }}</textarea>
             </p>
+            <div class="week-calendar">
+                            <div class="week-header">Выберите дни недели:</div>
+                            <div class="week-days">
+                                <div class="day" data-weekday="1">Пн</div>
+                                <div class="day" data-weekday="2">Вт</div>
+                                <div class="day" data-weekday="3">Ср</div>
+                                <div class="day" data-weekday="4">Чт</div>
+                                <div class="day" data-weekday="5">Пт</div>
+                                <div class="day" data-weekday="6">Сб</div>
+                                <div class="day" data-weekday="0">Вс</div>
+                            </div>
+                        </div>
             <div class="btn-container">
                 <button type="submit" class="btn">Сохранить</button>
                 <a href="{% url 'dashboard' %}" class="btn btn-cancel">Отмена</a>
@@ -142,6 +153,56 @@
         }, 500); // Задержка 0.5 секунды
     });
 
+        function setupWeekCalendar() {
+        const days = document.querySelectorAll('.week-days .day');
+
+        days.forEach(day => {
+            day.addEventListener('click', function() {
+                this.classList.toggle('selected');
+                const weekday = this.dataset.weekday;
+
+                if (this.classList.contains('selected')) {
+                    if (!selectedWeekdays.includes(weekday)) {
+                        selectedWeekdays.push(weekday);
+                    }
+                } else {
+                    selectedWeekdays = selectedWeekdays.filter(d => d !== weekday);
+                }
+
+                updateSelectedDaysText();
+            });
+        });
+    }
+
+    function updateSelectedDaysText() {
+        const daysMap = {
+            '0': 'Вс', '1': 'Пн', '2': 'Вт', '3': 'Ср',
+            '4': 'Чт', '5': 'Пт', '6': 'Сб'
+        };
+
+        const selectedText = selectedWeekdays.length > 0
+            ? selectedWeekdays.map(d => daysMap[d]).join(', ')
+            : 'не выбраны';
+
+        document.getElementById('selected-days-text').textContent = selectedText;
+    }
+
+    function getDatesForSelectedWeekdays() {
+        const today = new Date();
+        const dates = [];
+
+        // Добавляем даты на 4 недели вперед
+        for (let i = 0; i < 28; i++) {
+            const date = new Date();
+            date.setDate(today.getDate() + i);
+
+            if (selectedWeekdays.includes(date.getDay().toString())) {
+                dates.push(date.toISOString().split('T')[0]);
+            }
+        }
+
+        return dates;
+    }
     </script>
 </body>
 </html>

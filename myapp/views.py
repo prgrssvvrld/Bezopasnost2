@@ -99,40 +99,48 @@ def add_template_habit(request, habit_id):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            dates = data.get('dates', [])
+            weekdays = data.get('weekdays', [])  # Получаем дни недели (например, [1,3,5])
             category_id = data.get('category_id')
 
-            if not dates:
-                return JsonResponse({'error': 'Не указаны даты'}, status=400)
+            if not weekdays:
+                return JsonResponse({'error': 'Не указаны дни недели'}, status=400)
 
             template_habit = get_object_or_404(Habit, id=habit_id, is_template=True)
             category = get_object_or_404(Category, id=category_id) if category_id else None
-            created_habits = []
 
-            for date_str in dates:
-                try:
-                    habit = Habit.objects.create(
-                        name=template_habit.name,
-                        description=template_habit.description,
-                        category=category,
-                        user=request.user,
-                        completed=False,
-                        completion_date=date_str,
-                        is_template=False
-                    )
-                    created_habits.append({
-                        'id': habit.id,
-                        'name': habit.name,
-                        'date': date_str
-                    })
-                except Exception as e:
-                    print(f"Error creating habit for {date_str}: {str(e)}")
-                    continue
+            # Проверяем, не существует ли уже такая привычка
+            existing_habit = Habit.objects.filter(
+                user=request.user,
+                name=template_habit.name,
+                category=category,
+                is_template=False,
+                weekdays__isnull=False
+            ).first()
 
-            return JsonResponse({
-                'success': True,
-                'habits': created_habits
-            })
+            if existing_habit:
+                # Обновляем существующую привычку
+                existing_habit.weekdays = weekdays
+                existing_habit.save()
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Привычка обновлена',
+                    'habit_id': existing_habit.id
+                })
+            else:
+                # Создаем новую привычку
+                habit = Habit.objects.create(
+                    name=template_habit.name,
+                    description=template_habit.description,
+                    category=category,
+                    user=request.user,
+                    is_template=False,
+                    weekdays=weekdays  # Сохраняем выбранные дни недели
+                )
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Привычка создана',
+                    'habit_id': habit.id
+                })
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)

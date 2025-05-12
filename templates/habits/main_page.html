@@ -432,17 +432,22 @@
     </div>
 
     <div class="container">
-        <div class="habit-form-container">
-            <form method="post" class="habit-form">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="id_category" class="form-label">
-                        <i class="fas fa-tag"></i> Категория:
-                    </label>
-                    <button type="button" class="btn btn-category" id="open-category-modal">
-                        <i class="fas fa-chevron-down" style="margin-right: 8px;"></i> Выбрать категорию
-                    </button>
+    <div class="habit-form-container">
+        <form method="post" class="habit-form" id="habit-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_category" class="form-label">
+                    <i class="fas fa-tag"></i> Категория:
+                </label>
+                <input type="hidden" name="category" id="id_category" required>
+                <button type="button" class="btn btn-category" id="open-category-modal">
+                    <i class="fas fa-chevron-down" style="margin-right: 8px;"></i>
+                    <span id="category-text">Выбрать категорию</span>
+                </button>
+                <div id="category-error" class="error-message" style="color: red; display: none;">
+                    Пожалуйста, выберите категорию
                 </div>
+            </div>
                 <div class="form-group">
                     <label for="id_name" class="form-label">
                         <i class="fas fa-pencil-alt"></i> Название привычки:
@@ -455,13 +460,19 @@
                         <textarea name="description" id="id_description" class="form-textarea" rows="3" placeholder="Опишите детали привычки..."></textarea>
                     </label>
                 </div>
-                <!-- Добавьте этот блок для выбора даты -->
-                <div class="form-group">
-                    <label for="id_date" class="form-label">
-                        <i class="fas fa-calendar-alt"></i> Дата выполнения (необязательно):
-                        <input type="date" name="date" id="id_date" class="form-input">
-                    </label>
+                <div class="week-calendar">
+                <div class="week-header">Выберите дни недели:</div>
+                <div class="week-days">
+                    <div class="day" data-weekday="1">Пн</div>
+                    <div class="day" data-weekday="2">Вт</div>
+                    <div class="day" data-weekday="3">Ср</div>
+                    <div class="day" data-weekday="4">Чт</div>
+                    <div class="day" data-weekday="5">Пт</div>
+                    <div class="day" data-weekday="6">Сб</div>
+                    <div class="day" data-weekday="0">Вс</div>
                 </div>
+            </div>
+
                  <button type="submit" class="btn btn-primary">
                     <i class="fas fa-plus-circle" style="margin-right: 6px;"></i> Добавить привычку
                 </button>
@@ -567,13 +578,6 @@
 </div>
 
 
-    <div class="form-group date-picker-container">
-        <label for="modal-date" class="form-label">
-            <i class="fas fa-calendar-alt"></i> Дата выполнения (необязательно):
-        </label>
-        <input type="date" id="modal-date" class="form-input">
-    </div>
-
     <button class="add-habit-btn" id="add-habit-in-modal">
         <i class="fas fa-plus-circle"></i> Добавить свою привычку
     </button>
@@ -604,6 +608,7 @@
 <!-- Feather icons -->
 <script src="https://unpkg.com/feather-icons"></script>
     <script>
+
     const themeToggle = document.getElementById('theme-toggle');
     const root = document.documentElement;
 
@@ -642,6 +647,28 @@
             nav.classList.remove('navbar--open');
         }, 500); // Задержка 0.5 секунды
     });
+
+    document.getElementById('habit-form').addEventListener('submit', function(e) {
+    const categoryInput = document.getElementById('id_category');
+    const errorElement = document.getElementById('category-error');
+
+    if (!categoryInput.value) {
+        e.preventDefault(); // Остановить отправку формы
+        errorElement.style.display = 'block';
+
+        // Прокрутить к ошибке
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+        errorElement.style.display = 'none';
+    }
+});
+
+// Когда вы выбираете категорию в модальном окне, обновите скрытое поле
+function onCategorySelected(categoryId, categoryName) {
+    document.getElementById('id_category').value = categoryId;
+    document.getElementById('category-text').textContent = categoryName;
+    document.getElementById('category-error').style.display = 'none';
+}
 
     </script>
 <script src="{% static 'js/main_page.js' %}"
