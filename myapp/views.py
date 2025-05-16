@@ -1,11 +1,9 @@
-from django.shortcuts import render, redirect,get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from .models import Habit, Category, Weekday
-from .forms import HabitForm, ProfileForm
-from django.contrib.auth import authenticate, login
-from .forms import CustomUserCreationForm
-from django.contrib.auth import logout
+from .forms import HabitForm, ProfileForm, CustomUserCreationForm
+from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.template.defaulttags import register
 from django.urls import reverse
@@ -18,10 +16,18 @@ from django import forms
 from django.utils import timezone
 from datetime import datetime, timedelta
 from django.db.models import Q
+from django.contrib import messages
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
+from django.contrib.auth import update_session_auth_hash
+
+User = get_user_model()
 
 
 def welcome_page(request):
     return render(request, 'registration/welcome.html')
+
 
 def home_page(request):
     today = timezone.now().date()
@@ -35,10 +41,12 @@ def home_page(request):
         'completed_today': completed_today
     })
 
+
 def toggle_habit(request, habit_id):
     habit = get_object_or_404(Habit, id=habit_id, user=request.user)
     habit.toggle_completion()
     return JsonResponse({'success': True})
+
 
 @login_required
 def toggle_habit_completion(request, habit_id):
@@ -49,6 +57,7 @@ def toggle_habit_completion(request, habit_id):
         habit.save()
         return JsonResponse({'success': True})
     return JsonResponse({'success': False}, status=400)
+
 
 @login_required
 def add_habit(request):
@@ -62,7 +71,6 @@ def add_habit(request):
     return redirect('dashboard')
 
 
-#добавление привычки при выборе категории
 @login_required
 @require_POST
 @csrf_exempt
@@ -73,13 +81,12 @@ def api_add_habit(request):
         name = data.get('name')
         description = data.get('description')
         date_str = data.get('date')
-        category_id = data.get('category_id')  # Получаем category_id из запроса
-        weekdays = data.get('weekdays', [])  # Получаем дни недели из запроса
+        category_id = data.get('category_id')
+        weekdays = data.get('weekdays', [])
 
         if not name:
             return JsonResponse({'success': False, 'message': 'Название обязательно'}, status=400)
 
-        # Получаем категорию, если она передана в запросе
         category = None
         if category_id:
             try:
@@ -87,34 +94,31 @@ def api_add_habit(request):
             except Category.DoesNotExist:
                 return JsonResponse({'success': False, 'message': 'Категория не найдена'}, status=400)
 
-        # Создание привычки
         habit = Habit.objects.create(
             name=name,
             description=description,
             user=request.user,
-            category=category,  # Используем полученную категорию
-            completed=False,  # Привычка по умолчанию не завершена
+            category=category,
+            completed=False,
         )
 
-        # Устанавливаем дни недели для привычки
         if weekdays:
             for weekday in weekdays:
                 try:
                     day = Weekday.objects.get(day_of_week=weekday)
                     habit.weekdays.add(day)
                 except Weekday.DoesNotExist:
-                    return JsonResponse({'success': False, 'message': f'Некорректный день недели: {weekday}'}, status=400)
+                    return JsonResponse({'success': False, 'message': f'Некорректный день недели: {weekday}'},
+                                        status=400)
 
-        # Если дата указана, устанавливаем completion_date
         if date_str:
             try:
                 habit.completion_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-                habit.completed = True  # Привычка считается выполненной, если дата установлена
+                habit.completed = True
                 habit.save()
             except ValueError:
                 return JsonResponse({'success': False, 'message': 'Неверный формат даты'}, status=400)
 
-        # Возвращаем успешный ответ с данными о привычке
         return JsonResponse({
             'success': True,
             'habit': {
@@ -124,7 +128,7 @@ def api_add_habit(request):
                 'category': habit.category.id if habit.category else None,
                 'completion_date': habit.completion_date.strftime('%Y-%m-%d') if habit.completion_date else None,
                 'completed': habit.completed,
-                'weekdays': [day.day_of_week for day in habit.weekdays.all()]  # Возвращаем выбранные дни недели
+                'weekdays': [day.day_of_week for day in habit.weekdays.all()]
             }
         }, status=201)
 
@@ -140,17 +144,15 @@ def add_template_habit(request, habit_id):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            weekdays_ids = data.get('weekdays', [])  # Получаем ID дней недели (например, [1, 3, 5])
+            weekdays_ids = data.get('weekdays', [])
             category_id = data.get('category_id')
 
             if not weekdays_ids:
                 return JsonResponse({'error': 'Не указаны дни недели'}, status=400)
 
-            # Получаем шаблон привычки
             template_habit = get_object_or_404(Habit, id=habit_id, is_template=True)
             category = get_object_or_404(Category, id=category_id) if category_id else None
 
-            # Проверяем, не существует ли уже такая привычка
             existing_habit = Habit.objects.filter(
                 user=request.user,
                 name=template_habit.name,
@@ -158,12 +160,10 @@ def add_template_habit(request, habit_id):
                 is_template=False
             ).first()
 
-            # Получаем объекты Weekday для выбранных дней
             weekdays = Weekday.objects.filter(id__in=weekdays_ids)
 
             if existing_habit:
-                # Обновляем существующую привычку
-                existing_habit.weekdays.set(weekdays)  # Используем set для обновления связи
+                existing_habit.weekdays.set(weekdays)
                 existing_habit.save()
                 return JsonResponse({
                     'success': True,
@@ -171,7 +171,6 @@ def add_template_habit(request, habit_id):
                     'habit_id': existing_habit.id
                 })
             else:
-                # Создаем новую привычку
                 habit = Habit.objects.create(
                     name=template_habit.name,
                     description=template_habit.description,
@@ -179,7 +178,7 @@ def add_template_habit(request, habit_id):
                     user=request.user,
                     is_template=False
                 )
-                habit.weekdays.set(weekdays)  # Сохраняем выбранные дни недели
+                habit.weekdays.set(weekdays)
                 habit.save()
                 return JsonResponse({
                     'success': True,
@@ -192,7 +191,7 @@ def add_template_habit(request, habit_id):
 
     return JsonResponse({'error': 'Неверный метод'}, status=405)
 
-#редактирование привычки при выборе категории
+
 @csrf_exempt
 @login_required
 def api_update_habit(request):
@@ -205,11 +204,8 @@ def api_update_habit(request):
         category_id = data.get('category_id')
 
         template = Habit.objects.get(id=template_id, is_template=True)
-
-        # Категория
         category = Category.objects.get(id=category_id) if category_id else None
 
-        # Создаём привычку с новыми данными
         new_habit = Habit.objects.create(
             user=request.user,
             name=new_name if new_name else template.name,
@@ -228,7 +224,6 @@ def api_update_habit(request):
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 
-#редактирвоание привычки
 @login_required
 def edit_habit(request, habit_id):
     habit = get_object_or_404(Habit, id=habit_id, user=request.user)
@@ -241,6 +236,7 @@ def edit_habit(request, habit_id):
         form = HabitForm(instance=habit)
     return render(request, 'habits/edit.html', {'form': form})
 
+
 @login_required
 def delete_habit(request, habit_id):
     habit = get_object_or_404(Habit, id=habit_id, user=request.user)
@@ -248,20 +244,35 @@ def delete_habit(request, habit_id):
         habit.delete()
     return redirect('dashboard')
 
+
 def custom_logout(request):
     logout(request)
     return redirect('/')
+
 
 def custom_login(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
+
+        # Проверяем, были ли недавние попытки входа
+        last_failed_attempt = request.session.get('last_failed_attempt')
+        if last_failed_attempt:
+            elapsed = timezone.now().timestamp() - float(last_failed_attempt)
+            if elapsed < 5:  # 5 секунд таймаут
+                remaining_time = 5 - int(elapsed)
+                messages.error(request, f'Пожалуйста, подождите {remaining_time} секунд перед следующей попыткой')
+                return render(request, 'registration/login.html')
+
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
             return redirect('home')
         else:
-            return render(request, 'registration/login.html', {'error': 'Неверные данные'})
+            # Сохраняем время неудачной попытки
+            request.session['last_failed_attempt'] = timezone.now().timestamp()
+            messages.error(request, 'Неверное имя пользователя или пароль')
+            return render(request, 'registration/login.html')
     return render(request, 'registration/login.html')
 
 
@@ -269,50 +280,59 @@ def signup(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('home')
+            try:
+                # Валидация пароля
+                validate_password(form.cleaned_data['password1'])
+
+                user = form.save()
+                login(request, user)
+                return redirect('home')
+            except ValidationError as e:
+                for error in e.messages:
+                    messages.error(request, error)
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
     else:
         form = CustomUserCreationForm()
     return render(request, 'registration/sign_up.html', {'form': form})
 
 
-@login_required #////////////////////
+@login_required
 def chart_view(request):
     habits = Habit.objects.filter(user=request.user)
     categories = Category.objects.all()
 
-    # Статистика по категориям
     category_stats = [
         {
             'name': category.name,
             'count': habits.filter(category=category).count(),
-            'color': get_category_color(category.name.lower())  # ключ — имя категории в нижнем регистре
+            'color': get_category_color(category.name.lower())
         }
         for category in categories
     ]
 
-    # Статистика выполнения
     completed_count = habits.filter(completed=True).count()
     not_completed_count = habits.filter(completed=False).count()
 
     return render(request, 'icons/chart.html', {
         'habits': habits,
-        'categories': [(cat.id, cat.name) for cat in categories],  # если нужно для фильтра
+        'categories': [(cat.id, cat.name) for cat in categories],
         'category_stats': category_stats,
         'completed_count': completed_count,
         'not_completed_count': not_completed_count
     })
 
+
 @login_required
 def dashboard(request):
-
     if request.method == 'POST':
         form = HabitForm(request.POST)
         if form.is_valid():
             habit = form.save(commit=False)
             habit.user = request.user
-            habit.completed = False  #дефолтное значение
+            habit.completed = False
             habit.save()
             return redirect('dashboard')
     else:
@@ -344,13 +364,14 @@ def edit_profile(request):
 
             if 'profile_picture' in request.FILES:
                 if customuser.profile_picture:
-                    customuser.profile_picture.delete()  # Удаляем старое фото, если оно есть
+                    customuser.profile_picture.delete()
                 customuser.profile_picture = request.FILES['profile_picture']
                 customuser.save()
             return redirect('profile')
     else:
         form = ProfileForm(instance=request.user)
     return render(request, 'habits/edit_profile.html', {'form': form})
+
 
 @login_required
 def faq_view(request):
@@ -375,40 +396,7 @@ def faq_view(request):
     return render(request, 'habits/faq.html', {'faq_items': faq_items})
 
 
-@register.filter
-def get_item(dictionary, key):
-    return dictionary.get(key)
-
-
-# @login_required
-# def chart_view(request):
-#     habits = Habit.objects.filter(user=request.user)
-#     categories = Habit.CATEGORY_CHOICES
-#
-#     # Статистика по категориям
-#     category_stats = [
-#         {
-#             'name': cat[1],
-#             'count': habits.filter(category=cat[0]).count(),
-#             'color': get_category_color(cat[0])
-#         }
-#         for cat in categories
-#     ]
-#
-#     # Статистика выполнения
-#     completed_count = habits.filter(completed=True).count()
-#     not_completed_count = habits.filter(completed=False).count()
-#
-#     return render(request, 'icons/chart.html', {
-#         'habits': habits,
-#         'categories': categories,
-#         'category_stats': category_stats,
-#         'completed_count': completed_count,
-#         'not_completed_count': not_completed_count
-#     })
-
-
-def get_category_color(category_name): #//////////////
+def get_category_color(category_name):
     color_map = {
         'здоровье': '#FF6384',
         'спорт': '#36A2EB',
@@ -418,7 +406,7 @@ def get_category_color(category_name): #//////////////
     }
     return color_map.get(category_name, '#C9CBCF')
 
-# получение привычки по категориям
+
 @login_required
 def filter_habits_by_category(request, category_param):
     try:
@@ -431,42 +419,13 @@ def filter_habits_by_category(request, category_param):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-#переход на след страницу если привычек много
-# def paginated_habits(request):
-#     page_number = request.GET.get('page', 1)
-#     habits = Habit.objects.filter(user=request.user).order_by('-id')  # 🔒 Только привычки пользователя
-#     paginator = Paginator(habits, 6)  # 6 привычек на страницу
-#
-#     page = paginator.get_page(page_number)
-#
-#     habits_data = [
-#         {
-#             'id': habit.id,
-#             'name': habit.name,
-#             'description': habit.description,
-#             'completed_today': habit.completed_today,
-#         }
-#         for habit in page
-#     ]
-#
-#     return JsonResponse({
-#         'habits': habits_data,
-#         'has_previous': page.has_previous(),
-#         'has_next': page.has_next(),
-#         'page': page.number,
-#         'total_pages': paginator.num_pages,
-#     })
 
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['username', 'email']
 
-from django.contrib.auth import update_session_auth_hash
-from django.contrib import messages
+
 @login_required
 def settings_view(request):
     if request.method == 'POST':
@@ -498,7 +457,6 @@ def settings_view(request):
 
 @login_required
 def calendar_view(request):
-    # Получаем текущую дату или выбранную пользователем
     year = request.GET.get('year', timezone.now().year)
     month = request.GET.get('month', timezone.now().month)
 
@@ -539,6 +497,7 @@ def calendar_view(request):
         'habits_by_day': habits_by_day,
     })
 
+
 @login_required
 def toggle_habit_completion(request, habit_id):
     if request.method == 'POST':
@@ -571,5 +530,3 @@ def toggle_habit_completion(request, habit_id):
         return JsonResponse({'success': True})
 
     return JsonResponse({'success': False}, status=400)
-
-

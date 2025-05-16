@@ -20,20 +20,49 @@
     <title>Регистрация</title>
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
-    {% load static %}  <!-- Загрузка тегов статических файлов -->
+    {% load static %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/sign_up.css' %}">  <!-- Подключение CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/sign_up.css' %}">
 </head>
 <body>
     <button id="theme-toggle" class="theme-toggle" title="Сменить тему"></button>
     <div class="background"></div>
-    <div class="balloons"></div> <!-- Фон с шариками -->
+    <div class="balloons"></div>
 
     <div class="overlay-text">
         Измени свои привычки, и изменится твоя жизнь
     </div>
     <form method="post">
-    {% csrf_token %}
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="alert alert-error">
+            <ul class="errorlist">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <li>
+                            {% if field == 'password2' %}
+                                {% if error == "This password is too short. It must contain at least 8 characters." %}
+                                    Пароль слишком короткий. Минимум 8 символов.
+                                {% elif error == "This password is too common." %}
+                                    Пароль слишком простой.
+                                {% elif error == "This password is entirely numeric." %}
+                                    Пароль не может состоять только из цифр.
+                                {% elif error == "A user with that username already exists." %}
+                                    Пользователь с таким именем уже существует.
+                                {% else %}
+                                    Пароль: {{ error }}
+                                {% endif %}
+                            {% else %}
+                                {{ field }}: {{ error }}
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
     <h2>Регистрация</h2>
 
     <label for="id_username">Имя пользователя:</label>
@@ -87,38 +116,38 @@ function togglePassword(fieldId) {
     }
 }
 
-    const themeToggle = document.getElementById('theme-toggle');
+const themeToggle = document.getElementById('theme-toggle');
 
-    function updateIcon(isLight) {
-        const iconHtml = isLight
-            ? feather.icons.moon.toSvg()  // при светлой теме — показываем луну
-            : feather.icons.sun.toSvg();  // при тёмной теме — показываем солнце
-        themeToggle.innerHTML = iconHtml;
-        feather.replace();
+function updateIcon(isLight) {
+    const iconHtml = isLight
+        ? feather.icons.moon.toSvg()
+        : feather.icons.sun.toSvg();
+    themeToggle.innerHTML = iconHtml;
+    feather.replace();
+}
+
+function setInitialTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isLight = savedTheme === 'light' || (!savedTheme && !prefersDark);
+
+    if (isLight) {
+        document.body.classList.add('light-theme');
+    } else {
+        document.body.classList.remove('light-theme');
     }
 
-    function setInitialTheme() {
-        const savedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const isLight = savedTheme === 'light' || (!savedTheme && !prefersDark);
+    updateIcon(isLight);
+}
 
-        if (isLight) {
-            document.body.classList.add('light-theme');
-        } else {
-            document.body.classList.remove('light-theme');
-        }
+themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('light-theme');
+    const isLight = document.body.classList.contains('light-theme');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    updateIcon(isLight);
+});
 
-        updateIcon(isLight);
-    }
-
-    themeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('light-theme');
-        const isLight = document.body.classList.contains('light-theme');
-        localStorage.setItem('theme', isLight ? 'light' : 'dark');
-        updateIcon(isLight);
-    });
-
-    setInitialTheme();
+setInitialTheme();
 </script>
 </body>
 </html>

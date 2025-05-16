@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -105,13 +106,15 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 8,
+        }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -120,6 +123,18 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+from django.contrib.auth.password_validation import (
+    UserAttributeSimilarityValidator,
+    MinimumLengthValidator,
+    CommonPasswordValidator,
+    NumericPasswordValidator
+)
+
+UserAttributeSimilarityValidator.message = "Пароль слишком похож на другую информацию пользователя."
+MinimumLengthValidator.message = "Пароль слишком короткий. Минимум 8 символов."
+CommonPasswordValidator.message = "Пароль слишком простой."
+NumericPasswordValidator.message = "Пароль не может состоять только из цифр."
 
 
 # Internationalization
@@ -159,3 +174,6 @@ EMAIL_HOST_PASSWORD = 'ваш_пароль'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'

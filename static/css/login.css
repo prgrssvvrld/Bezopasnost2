@@ -201,3 +201,27 @@ body.light-theme .theme-toggle {
     color: #222;
     background-color: rgba(0, 0, 0, 0.1);
 }
+.alert-error {
+    color: #ff0000;
+    background-color: #ffeeee;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ffcccc;
+}
+
+.errorlist {
+    color: #ff0000;
+    list-style-type: none;
+    padding-left: 0;
+    margin-top: 5px;
+}
+
+.alert-success {
+    color: #008000;
+    background-color: #eeffee;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ccffcc;
+}
