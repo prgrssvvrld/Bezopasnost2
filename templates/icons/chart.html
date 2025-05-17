@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Трекер привычек</title>
+    <title>Статистика привычек</title>
     {% load static %}
     <script>
         (function () {
@@ -21,9 +21,114 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .compact-habits {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .compact-habit-card {
+            padding: 12px;
+            border-radius: 8px;
+            background: var(--card-bg);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        .compact-habit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .habit-category {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        .compact-habit-name {
+            font-weight: 500;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+        .compact-habit-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin: 4px 0 0;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 8px;
+        }
+        .pagination a, .pagination span {
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        .pagination a {
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+        .pagination a:hover {
+            background: var(--primary-light);
+        }
+        .pagination .current {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Новые стили для вертикального фильтра */
+        .filter-section {
+            display: flex;
+            gap: 20px;
+        }
+        .category-filter {
+            width: 200px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .category-filter h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        .category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .category-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .category-item:hover {
+            background: rgba(0,0,0,0.05);
+        }
+        .category-item.active {
+            background: var(--primary-light);
+            font-weight: 500;
+        }
+        .category-count {
+            margin-left: auto;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .content-section {
+            flex: 1;
+        }
+    </style>
 </head>
 <body>
-    <!-- User icon in top right corner -->
     <div class="user-icon">
         <a href="{% url 'profile' %}">
             {% if request.user.profile_picture %}
@@ -34,16 +139,15 @@
         </a>
     </div>
 
-    <!-- Collapsible navbar -->
-   <nav class="navbar">
+    <nav class="navbar">
         <ul class="navbar__menu">
             <li class="navbar__item">
-                <a href="{% url 'dashboard' %}" class="navbar__link" title="Главная">
+                <a href="{% url 'home' %}" class="navbar__link" title="Главная">
                     <i data-feather="home"></i>
                 </a>
             </li>
             <li class="navbar__item">
-                <a href="{% url 'dashboard' %}" class="navbar__link" title="Добавить привычку">
+                <a href="{% url 'habits' %}" class="navbar__link" title="Добавить привычку">
                     <i data-feather="edit-3"></i>
                 </a>
             </li>
@@ -53,7 +157,7 @@
                 </a>
             </li>
             <li class="navbar__item">
-                <a href="{% url 'chart' %}" class="navbar__link" title="Статистика">
+                <a href="{% url 'chart' %}" class="navbar__link active" title="Статистика">
                     <i data-feather="bar-chart-2"></i>
                 </a>
             </li>
@@ -82,69 +186,89 @@
     </div>
 
     <div class="container">
-        <div class="habit-tracker">
+        <div class="filter-section">
             <section class="category-filter">
-                <h2>Фильтр по категориям</h2>
-                <div class="category-buttons">
-                    <button class="category-btn active" data-category="all">Все</button>
+                <h2>Категории</h2>
+                <div class="category-list">
+                    <div class="category-item active" data-category="all">
+                        Все привычки
+                        <span class="category-count">{{ total_habits_count }}</span>
+                    </div>
                     {% for category in categories %}
-                        <button class="category-btn" data-category="{{ category.0 }}">{{ category.1 }}</button>
+                        <div class="category-item" data-category="{{ category.0 }}">
+                            {{ category.1 }}
+                            <span class="category-count">
+                                {% for stat in category_stats %}
+                                    {% if stat.name == category.1 %}
+                                        {{ stat.count }}
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                        </div>
                     {% endfor %}
                 </div>
             </section>
 
+            <div class="content-section">
+                <section class="habits-list">
+                    <h2 class="section-title">Мои привычки</h2>
+                    <div class="compact-habits">
+                        {% for habit in page_obj %}
+                        <div class="compact-habit-card" data-habit-id="{{ habit.id }}" data-category="{{ habit.category }}">
+                            <div class="compact-habit-header">
+                                <span class="habit-category {{ habit.color_class }}">{{ habit.get_category_display }}</span>
+                            </div>
+                            <h3 class="compact-habit-name">{{ habit.name }}</h3>
+                            {% if habit.description %}<p class="compact-habit-desc">{{ habit.description }}</p>{% endif %}
+                        </div>
+                        {% empty %}
+                        <p>У вас пока нет привычек. Добавьте первую привычку!</p>
+                        {% endfor %}
+                    </div>
 
-            <section class="habits-list">
-                <h2 class="section-title">🧠 Мои привычки</h2>
+                    {% if page_obj.paginator.num_pages > 1 %}
+                    <div class="pagination">
+                        {% if page_obj.has_previous %}
+                            <a href="?page=1">&laquo; первая</a>
+                            <a href="?page={{ page_obj.previous_page_number }}">предыдущая</a>
+                        {% endif %}
 
-            {% for habit in habits %}
-            <div class="habit-card" data-habit-id="{{ habit.id }}">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" {% if habit.completed_today %}checked{% endif %} data-habit-id="{{ habit.id }}">
-                <span class="checkmark"></span>
-              </label>
-              <div class="habit-content">
-                <p><strong>{{ habit.name }}</strong>{% if habit.description %} — {{ habit.description }}{% endif %}</p>
-              </div>
+                        <span class="current">
+                            Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+                        </span>
+
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}">следующая</a>
+                            <a href="?page={{ page_obj.paginator.num_pages }}">последняя &raquo;</a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </section>
+
+                <section class="chart-section">
+                    <h2>Распределение по категориям</h2>
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </section>
+
+                <section class="completion-section">
+                    <h2>Статус выполнения на сегодня</h2>
+                    <div class="chart-container">
+                        <canvas id="completionChart"></canvas>
+                    </div>
+                </section>
             </div>
-            {% empty %}
-            <p>У вас пока нет привычек. Добавьте первую привычку!</p>
-            {% endfor %}
-
-            </section>
-
-            <section class="chart-section">
-                <h2>Прогресс по категориям</h2>
-                <div class="chart-container">
-                    <canvas id="categoryChart"></canvas>
-                </div>
-            </section>
-
-            <section class="completion-section">
-                <h2>Выполнение привычек</h2>
-                <div class="chart-container">
-                    <canvas id="completionChart"></canvas>
-                </div>
-            </section>
         </div>
     </div>
 
-    <script src="https://unpkg.com/feather-icons"></script><script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script>
+        feather.replace();
+
+        // Theme toggle
         const themeToggle = document.getElementById('theme-toggle');
         const root = document.documentElement;
-
-        const savedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
-
-        updateMoonIcon(isDark);
-
-        themeToggle.addEventListener('click', () => {
-            root.classList.toggle('dark-mode');
-            const isDark = root.classList.contains('dark-mode');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            updateMoonIcon(isDark);
-        });
 
         function updateMoonIcon(isDark) {
             const iconHtml = isDark
@@ -153,8 +277,19 @@
             themeToggle.innerHTML = iconHtml;
         }
 
-        feather.replace();
+        themeToggle.addEventListener('click', () => {
+            root.classList.toggle('dark-mode');
+            const isDark = root.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateMoonIcon(isDark);
+            updateChartThemes(isDark);
+        });
 
+        // Initialize with current theme
+        const isDark = root.classList.contains('dark-mode');
+        updateMoonIcon(isDark);
+
+        // Navbar hover effect
         let nav = document.querySelector('.navbar');
         let timeout;
 
@@ -166,51 +301,27 @@
         nav.addEventListener('mouseleave', () => {
             timeout = setTimeout(() => {
                 nav.classList.remove('navbar--open');
-            }, 500); // Задержка 0.5 секунды
+            }, 500);
         });
 
-        // Category filter functionality
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+        // Category filter - новая версия для вертикального фильтра
+        document.querySelectorAll('.category-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
                 this.classList.add('active');
-                filterHabits(this.dataset.category);
+
+                const category = this.dataset.category;
+                const habitCards = document.querySelectorAll('.compact-habit-card');
+
+                habitCards.forEach(card => {
+                    if (category === 'all' || card.dataset.category === category) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
             });
         });
-
-        function filterHabits(category) {
-            const habits = document.querySelectorAll('.habit-item');
-            habits.forEach(habit => {
-                if (category === 'all' ||
-                    habit.querySelector('.habit-category').textContent ===
-                    document.querySelector(`.category-btn[data-category="${category}"]`).textContent) {
-                    habit.style.display = 'flex';
-                } else {
-                    habit.style.display = 'none';
-                }
-            });
-        }
-
-        // Toggle habit completion
-        function toggleHabitCompletion(habitId, completed) {
-            fetch(`/dashboard/${habitId}/toggle/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({completed: completed})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const habitItem = document.querySelector(`#habit-${habitId}`).closest('.habit-item');
-                    habitItem.classList.toggle('completed', completed);
-                    // Обновляем графики после изменения статуса
-                    updateCompletionChart(completed);
-                }
-            });
-        }
 
         // Initialize charts
         const categoryCtx = document.getElementById('categoryChart').getContext('2d');
@@ -224,7 +335,6 @@
                 {% endfor %}
             ],
             datasets: [{
-                label: 'Привычки по категориям',
                 data: [
                     {% for stat in category_stats %}
                         {{ stat.count }}{% if not forloop.last %},{% endif %}
@@ -235,28 +345,18 @@
                         '{{ stat.color }}'{% if not forloop.last %},{% endif %}
                     {% endfor %}
                 ],
-                borderColor: [
-                    {% for stat in category_stats %}
-                        '{{ stat.color }}'{% if not forloop.last %},{% endif %}
-                    {% endfor %}
-                ],
                 borderWidth: 1
             }]
         };
 
         // Completion chart data
-        let completionData = {
+        const completionData = {
             labels: ['Выполнено', 'Не выполнено'],
             datasets: [{
-                label: 'Статус выполнения',
                 data: [{{ completed_count }}, {{ not_completed_count }}],
                 backgroundColor: [
                     'rgba(75, 192, 192, 0.7)',
                     'rgba(255, 99, 132, 0.7)'
-                ],
-                borderColor: [
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(255, 99, 132, 1)'
                 ],
                 borderWidth: 1
             }]
@@ -268,7 +368,10 @@
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: 'bottom'
+                    position: 'bottom',
+                    labels: {
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-color') || '#4a5568'
+                    }
                 }
             }
         };
@@ -286,21 +389,9 @@
             options: chartOptions
         });
 
-        function updateCompletionChart(completed) {
-            // Обновляем данные графика выполнения
-            if (completed) {
-                completionData.datasets[0].data[0] += 1;
-                completionData.datasets[0].data[1] -= 1;
-            } else {
-                completionData.datasets[0].data[0] -= 1;
-                completionData.datasets[0].data[1] += 1;
-            }
-            completionChart.update();
-        }
-
         function updateChartThemes(isDark) {
             const textColor = isDark ? '#cbd5e0' : '#4a5568';
-            const gridColor = isDark ? 'rgba  (203, 213, 224, 0.1)' : 'rgba(74, 85, 104, 0.1)';
+            const gridColor = isDark ? 'rgba(203, 213, 224, 0.1)' : 'rgba(74, 85, 104, 0.1)';
 
             Chart.defaults.color = textColor;
             Chart.defaults.borderColor = gridColor;
@@ -312,8 +403,8 @@
             completionChart.update();
         }
 
-        // Инициализация фильтра при загрузке
-        document.querySelector('.category-btn.active').click();
+        // Initialize with current theme
+        updateChartThemes(isDark);
     </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
-from .models import Habit, Category, Weekday
+from .models import Habit
 from .forms import HabitForm, ProfileForm, CustomUserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse, HttpResponseBadRequest
@@ -21,6 +21,28 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.contrib.auth import update_session_auth_hash
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST, require_http_methods
+from django.core.paginator import Paginator
+from django.utils import timezone
+from django.utils import timezone
+from datetime import date, timedelta, datetime
+from calendar import monthrange
+from django.http import JsonResponse
+from django.contrib import messages
+from .models import HabitCompletion
+
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse, HttpResponseNotAllowed
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods, require_POST
+from django.contrib.auth.decorators import login_required
+from .models import Habit, HabitSchedule
+from django.views.decorators.http import require_GET
+from datetime import datetime
+from datetime import timedelta
+import json
 
 User = get_user_model()
 
@@ -30,220 +52,315 @@ def welcome_page(request):
 
 
 def home_page(request):
-    today = timezone.now().date()
-    habits = Habit.objects.filter(user=request.user)
-    habits_today = habits.filter(weekdays__day_of_week=today.weekday()).distinct()
-    completed_today = habits_today.filter(completion_date=today)
-
     return render(request, 'habits/home.html', {
-        'habits': habits,
-        'habits_today': habits_today,
-        'completed_today': completed_today
-    })
 
+    })
 
 def toggle_habit(request, habit_id):
     habit = get_object_or_404(Habit, id=habit_id, user=request.user)
     habit.toggle_completion()
     return JsonResponse({'success': True})
 
-
+@csrf_exempt
+@require_http_methods(["POST"])
 @login_required
-def toggle_habit_completion(request, habit_id):
-    if request.method == 'POST':
-        habit = get_object_or_404(Habit, id=habit_id, user=request.user)
-        habit.completed = not habit.completed
-        habit.completion_date = timezone.now().date() if habit.completed else None
-        habit.save()
-        return JsonResponse({'success': True})
-    return JsonResponse({'success': False}, status=400)
+def save_habit(request):
+    try:
+        data = json.loads(request.body)
+        user = request.user
 
+        habit_id = data.get('habit_id')
+        name = data.get('name')
+        category = data.get('category')
+        description = data.get('description', '')
+        days_goal = int(data.get('days_goal', 30))
+        reminder = data.get('reminder', False)
+        color_class = data.get('color_class')
+        schedule_days = data.get('schedule_days', [])
 
-@login_required
-def add_habit(request):
-    if request.method == 'POST':
-        form = HabitForm(request.POST)
-        if form.is_valid():
-            habit = form.save(commit=False)
-            habit.user = request.user
+        # Создание или обновление привычки
+        if habit_id:
+            habit = Habit.objects.get(id=habit_id, user=user)
+            habit.name = name
+            habit.category = category
+            habit.description = description
+            habit.days_goal = days_goal
+            habit.reminder = reminder
+            habit.color_class = color_class
             habit.save()
-            return redirect('dashboard')
-    return redirect('dashboard')
+        else:
+            habit = Habit.objects.create(
+                user=user,
+                name=name,
+                category=category,
+                description=description,
+                days_goal=days_goal,
+                reminder=reminder,
+                color_class=color_class
+            )
 
+        # Обновляем дни расписания
+        HabitSchedule.objects.filter(habit=habit).delete()
+        for day in schedule_days:
+            HabitSchedule.objects.create(habit=habit, day_of_week=int(day))
+
+        return JsonResponse({'success': True, 'habit': serialize_habit(habit)})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+def serialize_habit(habit, date=None):
+    return {
+        'id': habit.id,
+        'name': habit.name,
+        'category': habit.category,
+        'category_display': habit.get_category_display(),
+        'description': habit.description,
+        'days_goal': habit.days_goal,
+        'reminder': habit.reminder,
+        'color_class': habit.color_class,
+        'schedule_days': list(habit.schedule.values_list('day_of_week', flat=True)),
+        'completed': habit.is_completed_on(date),  # ✅ проверка на конкретную дату!
+        'is_completed_today': habit.is_completed_on(date) if date else habit.is_completed_today(),
+        'get_completion_rate': habit.get_completion_rate(),
+        'completion_rate': habit.get_completion_rate(),
+        'current_streak': habit.get_current_streak(),
+        'longest_streak': habit.get_longest_streak(),
+    }
+
+@require_GET
+def get_all_habits(request):
+    habits = Habit.objects.filter(user=request.user).prefetch_related('schedule')
+    habits_data = []
+
+    for habit in habits:
+        habits_data.append({
+            'id': habit.id,
+            'name': habit.name,
+            'category': habit.category,
+            'category_display': habit.get_category_display(),
+            'description': habit.description,
+            'days_goal': habit.days_goal,
+            'color_class': habit.color_class,
+            'schedule_days': [s.day_of_week for s in habit.schedule.all()],
+            'reminder': habit.reminder
+        })
+
+    return JsonResponse({'success': True, 'habits':[serialize_habit(h) for h in habits]})
+
+@require_GET
+def get_habits_by_day(request):
+    day = request.GET.get('day')
+
+    if not day:
+        return JsonResponse({'success': False, 'error': 'Day parameter is required'})
+
+    day = int(day)
+
+    # Получаем привычки, которые нужно выполнить в этот день недели
+    habits = Habit.objects.filter(
+        user=request.user,
+        schedule__day_of_week=day
+    ).distinct().prefetch_related('schedule')
+
+    # Получаем текущую дату
+    today = timezone.now().date()
+
+    # Смотрим, была ли привычка выполнена в этот день
+    habits_data = []
+    for habit in habits:
+        habit_data = serialize_habit(habit, date=today)
+
+        # Добавляем информацию о выполнении привычки для текущего дня
+        habit_data['is_completed_today'] = habit.is_completed_on(today)
+
+        habits_data.append(habit_data)
+
+    return JsonResponse({'success': True, 'habits': habits_data})
+
+# //////////////////////////////////
+@login_required
+@require_POST
+def add_habit(request):
+    try:
+        data = json.loads(request.body)
+        habit = Habit.objects.create(
+            user=request.user,
+            name=data['name'],
+            category=data['category'],
+            description=data.get('description', ''),
+            days_goal=data.get('days_goal', 30),
+            color_class=data.get('color_class', 'bg-gray-100 text-gray-800'),
+            reminder=data.get('reminder', False),
+        )
+        HabitSchedule.objects.bulk_create([
+            HabitSchedule(habit=habit, day_of_week=day) for day in data.get('repeat_days', [])
+        ])
+        return JsonResponse({'status': 'success', 'habit': _habit_summary(habit)})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+
+# @login_required
+# def get_habits(request):
+#     habits = Habit.objects.filter(user=request.user).prefetch_related('schedule')
+#     return JsonResponse({'habits': [_habit_full(h) for h in habits]})
+
+#////////////////////////
+@login_required
+def get_habits_for_day(request):
+    # Получаем день недели из параметра запроса (по умолчанию воскресенье - 0)
+    day_of_week = int(request.GET.get('day', 0))
+
+    # Получаем привычки, связанные с этим днем недели
+    habits = Habit.objects.filter(user=request.user, schedule__day_of_week=day_of_week)
+
+    # Сериализуем привычки и возвращаем их
+    habits_data = [serialize_habit(habit) for habit in habits]
+
+    return JsonResponse({'success': True, 'habits': habits_data})
+
+
+@login_required
+@require_http_methods(["POST"])
+def delete_habit(request, id):
+    habit = Habit.objects.filter(id=id, user=request.user).first()
+    if habit:
+        habit.delete()
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error', 'message': 'Habit not found'}, status=404)
+
+
+
+@login_required
+@require_http_methods(["POST"])
+def update_habit(request, id):
+    try:
+        data = json.loads(request.body)
+        habit = get_object_or_404(Habit, id=id, user=request.user)
+
+        # Обновление основных полей
+        for field in ['name', 'category', 'description', 'days_goal', 'color_class', 'reminder']:
+            if field in data:
+                setattr(habit, field, data[field])
+        habit.save()
+
+        # Обновление расписания
+        new_days = set(data.get('repeat_days', []))
+        existing_days = set(habit.schedule.values_list('day_of_week', flat=True))
+
+        # Добавляем новые дни
+        for day in new_days - existing_days:
+            HabitSchedule.objects.create(habit=habit, day_of_week=day)
+
+        # Удаляем старые дни, которых больше нет
+        habit.schedule.filter(day_of_week__in=existing_days - new_days).delete()
+
+        return JsonResponse({'status': 'success', 'habit': _habit_summary(habit)})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+@login_required
+def get_habit(request, id):
+    habit = Habit.objects.filter(id=id, user=request.user).prefetch_related('schedule').first()
+    if habit:
+        return JsonResponse(_habit_full(habit))
+    return JsonResponse({'status': 'error', 'message': 'Habit not found'}, status=404)
 
 @login_required
 @require_POST
-@csrf_exempt
-def api_add_habit(request):
+def track_habit(request, pk):
     try:
-        data = json.loads(request.body)
-
-        name = data.get('name')
-        description = data.get('description')
-        date_str = data.get('date')
-        category_id = data.get('category_id')
-        weekdays = data.get('weekdays', [])
-
-        if not name:
-            return JsonResponse({'success': False, 'message': 'Название обязательно'}, status=400)
-
-        category = None
-        if category_id:
-            try:
-                category = Category.objects.get(id=category_id)
-            except Category.DoesNotExist:
-                return JsonResponse({'success': False, 'message': 'Категория не найдена'}, status=400)
-
-        habit = Habit.objects.create(
-            name=name,
-            description=description,
-            user=request.user,
-            category=category,
-            completed=False,
-        )
-
-        if weekdays:
-            for weekday in weekdays:
-                try:
-                    day = Weekday.objects.get(day_of_week=weekday)
-                    habit.weekdays.add(day)
-                except Weekday.DoesNotExist:
-                    return JsonResponse({'success': False, 'message': f'Некорректный день недели: {weekday}'},
-                                        status=400)
-
-        if date_str:
-            try:
-                habit.completion_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-                habit.completed = True
-                habit.save()
-            except ValueError:
-                return JsonResponse({'success': False, 'message': 'Неверный формат даты'}, status=400)
-
-        return JsonResponse({
-            'success': True,
-            'habit': {
-                'id': habit.id,
-                'name': habit.name,
-                'description': habit.description,
-                'category': habit.category.id if habit.category else None,
-                'completion_date': habit.completion_date.strftime('%Y-%m-%d') if habit.completion_date else None,
-                'completed': habit.completed,
-                'weekdays': [day.day_of_week for day in habit.weekdays.all()]
-            }
-        }, status=201)
-
-    except Category.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'Категория не найдена'}, status=400)
+        # Заглушка: в будущем можно реализовать HabitCompletion
+        habit = get_object_or_404(Habit, id=pk, user=request.user)
+        return JsonResponse({'status': 'success'})
     except Exception as e:
-        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
 
-@login_required
-@csrf_exempt
-def add_template_habit(request, habit_id):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            weekdays_ids = data.get('weekdays', [])
-            category_id = data.get('category_id')
+import logging
 
-            if not weekdays_ids:
-                return JsonResponse({'error': 'Не указаны дни недели'}, status=400)
+logger = logging.getLogger(__name__)
 
-            template_habit = get_object_or_404(Habit, id=habit_id, is_template=True)
-            category = get_object_or_404(Category, id=category_id) if category_id else None
-
-            existing_habit = Habit.objects.filter(
-                user=request.user,
-                name=template_habit.name,
-                category=category,
-                is_template=False
-            ).first()
-
-            weekdays = Weekday.objects.filter(id__in=weekdays_ids)
-
-            if existing_habit:
-                existing_habit.weekdays.set(weekdays)
-                existing_habit.save()
-                return JsonResponse({
-                    'success': True,
-                    'message': 'Привычка обновлена',
-                    'habit_id': existing_habit.id
-                })
-            else:
-                habit = Habit.objects.create(
-                    name=template_habit.name,
-                    description=template_habit.description,
-                    category=category,
-                    user=request.user,
-                    is_template=False
-                )
-                habit.weekdays.set(weekdays)
-                habit.save()
-                return JsonResponse({
-                    'success': True,
-                    'message': 'Привычка создана',
-                    'habit_id': habit.id
-                })
-
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-
-    return JsonResponse({'error': 'Неверный метод'}, status=405)
-
-
-@csrf_exempt
-@login_required
-def api_update_habit(request):
-    try:
-        data = json.loads(request.body)
-
-        template_id = data.get('id')
-        new_name = data.get('name', '').strip()
-        new_description = data.get('description', '').strip()
-        category_id = data.get('category_id')
-
-        template = Habit.objects.get(id=template_id, is_template=True)
-        category = Category.objects.get(id=category_id) if category_id else None
-
-        new_habit = Habit.objects.create(
-            user=request.user,
-            name=new_name if new_name else template.name,
-            description=new_description if new_description else template.description,
-            category=category,
-            is_template=False
-        )
-
-        return JsonResponse({'success': True, 'habit_id': new_habit.id})
-
-    except Habit.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'Шаблонная привычка не найдена'}, status=404)
-    except Category.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'Категория не найдена'}, status=404)
-    except Exception as e:
-        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+# @require_POST
+# @login_required
+# def toggle_habit_completion(request, habit_id):
+#     habit = get_object_or_404(Habit, id=habit_id, user=request.user)
+#     data = json.loads(request.body)
+#     date_str = data.get('date')
+#
+#     # Логирование входных данных
+#     logger.info(f"Received request to toggle habit completion for habit_id: {habit_id}, date: {date_str}")
+#
+#     if not date_str:
+#         return JsonResponse({'error': 'Date is required'}, status=400)
+#
+#     try:
+#         date = datetime.strptime(date_str, '%Y-%m-%d').date()
+#     except ValueError:
+#         logger.error(f"Invalid date format: {date_str}")
+#         return JsonResponse({'error': 'Invalid date format'}, status=400)
+#
+#     today = timezone.now().date()
+#
+#     # Проверяем, что дата не в будущем
+#     if date > today:
+#         logger.error(f"Attempt to mark habit completion for a future date: {date}")
+#         return JsonResponse({'error': 'Нельзя отмечать привычки в будущем'}, status=400)
+#
+#     # Логика проверки, что привычка запланирована на этот день
+#     if date.weekday() not in [s.day_of_week for s in habit.schedule.all()]:
+#         logger.error(f"Habit not scheduled for the selected day: {date.weekday()}")
+#         return JsonResponse({'error': 'Привычка не запланирована на этот день'}, status=400)
+#
+#     # Попытка получить или создать запись о выполнении привычки
+#     completion, created = HabitCompletion.objects.get_or_create(habit=habit, date=date)
+#
+#     if created:
+#         completed = True
+#     else:
+#         # Если привычка уже была выполнена, то отменяем выполнение
+#         completion.delete()
+#         completed = False
+#
+#     # Логирование результата
+#     logger.info(f"Completion status for habit_id {habit_id} on {date}: {completed}")
+#
+#     return JsonResponse({
+#         'completed': completed,
+#         'completion_rate': habit.get_completion_rate(),
+#         'current_streak': habit.get_current_streak(),
+#         'longest_streak': habit.get_longest_streak(),
+#     })
 
 
-@login_required
-def edit_habit(request, habit_id):
-    habit = get_object_or_404(Habit, id=habit_id, user=request.user)
-    if request.method == 'POST':
-        form = HabitForm(request.POST, instance=habit)
-        if form.is_valid():
-            form.save()
-            return redirect('dashboard')
-    else:
-        form = HabitForm(instance=habit)
-    return render(request, 'habits/edit.html', {'form': form})
+
+# ———————————————————————
+# 🔧 Вспомогательные функции
+# ———————————————————————
+
+def _habit_summary(habit):
+    return {
+        'id': habit.id,
+        'name': habit.name,
+        'category': habit.get_category_display(),
+        'color_class': habit.color_class,
+        'days_goal': habit.days_goal,
+    }
 
 
-@login_required
-def delete_habit(request, habit_id):
-    habit = get_object_or_404(Habit, id=habit_id, user=request.user)
-    if request.method == 'POST':
-        habit.delete()
-    return redirect('dashboard')
-
+def _habit_full(habit):
+    return {
+        'id': habit.id,
+        'name': habit.name,
+        'category': habit.category,
+        'description': habit.description,
+        'color_class': habit.color_class,
+        'days_goal': habit.days_goal,
+        'reminder': habit.reminder,
+        'repeat_days': list(habit.schedule.values_list('day_of_week', flat=True)),
+        'schedule_days': [s.day_of_week for s in habit.schedule.all()],
+    }
 
 def custom_logout(request):
     logout(request)
@@ -301,47 +418,80 @@ def signup(request):
 
 @login_required
 def chart_view(request):
-    habits = Habit.objects.filter(user=request.user)
-    categories = Category.objects.all()
+    habits = Habit.objects.filter(user=request.user).order_by('-created_at')
 
-    category_stats = [
-        {
-            'name': category.name,
-            'count': habits.filter(category=category).count(),
-            'color': get_category_color(category.name.lower())
-        }
-        for category in categories
-    ]
+    # Пагинация - 10 привычек на страницу
+    paginator = Paginator(habits, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
-    completed_count = habits.filter(completed=True).count()
-    not_completed_count = habits.filter(completed=False).count()
+    # Рассчитываем статистику по всем привычкам (не только текущей странице)
+    category_stats = []
+    for category in Habit.CATEGORY_CHOICES:
+        count = habits.filter(category=category[0]).count()
+        if count > 0:
+            color = get_category_color(category[0])
+            category_stats.append({
+                'name': category[1],  # Отображаемое имя
+                'count': count,
+                'color': color
+            })
+
+    # Статистика выполнения (по всем привычкам)
+    completed_count = sum(1 for habit in habits if habit.is_completed_today())
+    not_completed_count = habits.count() - completed_count
 
     return render(request, 'icons/chart.html', {
-        'habits': habits,
-        'categories': [(cat.id, cat.name) for cat in categories],
+        'page_obj': page_obj,  # Передаем объект страницы вместо всех привычек
+        'categories': Habit.CATEGORY_CHOICES,
         'category_stats': category_stats,
         'completed_count': completed_count,
-        'not_completed_count': not_completed_count
+        'not_completed_count': not_completed_count,
+        'total_habits_count': habits.count()  # Общее количество привычек для информации
     })
+
+
+def get_category_color(category_name):
+    color_map = {
+        'health': 'rgba(75, 192, 192, 0.7)',
+        'productivity': 'rgba(54, 162, 235, 0.7)',
+        'learning': 'rgba(255, 206, 86, 0.7)',
+        'relationships': 'rgba(153, 102, 255, 0.7)',
+        'finance': 'rgba(255, 99, 132, 0.7)'
+    }
+    return color_map.get(category_name.lower(), 'rgba(201, 203, 207, 0.7)')
+
+
+def get_category_color(category_name):
+    color_map = {
+        'health': 'rgba(75, 192, 192, 0.7)',
+        'productivity': 'rgba(54, 162, 235, 0.7)',
+        'learning': 'rgba(255, 206, 86, 0.7)',
+        'relationships': 'rgba(153, 102, 255, 0.7)',
+        'finance': 'rgba(255, 99, 132, 0.7)'
+    }
+    return color_map.get(category_name.lower(), 'rgba(201, 203, 207, 0.7)')
 
 
 @login_required
 def dashboard(request):
-    if request.method == 'POST':
-        form = HabitForm(request.POST)
-        if form.is_valid():
-            habit = form.save(commit=False)
-            habit.user = request.user
-            habit.completed = False
-            habit.save()
-            return redirect('dashboard')
-    else:
-        form = HabitForm()
+    today = timezone.now().date()
+    weekday = today.weekday()
 
-    user_habits = Habit.objects.filter(user=request.user)
-    return render(request, 'habits/main_page.html', {'form': form, 'habits': user_habits})
+    habits = Habit.objects.filter(user=request.user).prefetch_related('schedule')
+    daily_habits = habits.filter(schedule__day_of_week=weekday).distinct()
 
+    for habit in daily_habits:
+        habit.is_completed_today = habit.is_completed_today()
+        habit.completion_rate = habit.get_completion_rate()
+        habit.current_streak = habit.get_current_streak()
+        habit.longest_streak = habit.get_longest_streak()
 
+    return render(request, 'habits/main_page.html', {
+        'habits': habits,
+        'daily_habits': daily_habits,
+        'today': today.strftime('%Y-%m-%d'),
+    })
 @login_required
 def profile_view(request):
     return render(request, 'habits/profile.html', {'user': request.user})
@@ -396,15 +546,7 @@ def faq_view(request):
     return render(request, 'habits/faq.html', {'faq_items': faq_items})
 
 
-def get_category_color(category_name):
-    color_map = {
-        'здоровье': '#FF6384',
-        'спорт': '#36A2EB',
-        'учёба': '#FFCE56',
-        'работа': '#4BC0C0',
-        'другое': '#9966FF'
-    }
-    return color_map.get(category_name, '#C9CBCF')
+
 
 
 @login_required
@@ -455,6 +597,14 @@ def settings_view(request):
     })
 
 
+from django.shortcuts import render
+from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+from datetime import datetime, timedelta
+from .models import Habit
+
+import calendar
+# views.py
 @login_required
 def calendar_view(request):
     year = request.GET.get('year', timezone.now().year)
@@ -463,39 +613,64 @@ def calendar_view(request):
     try:
         year = int(year)
         month = int(month)
-        current_date = datetime(year=year, month=month, day=1)
+        current_date = datetime(year=year, month=month, day=1).date()
     except (ValueError, TypeError):
-        current_date = timezone.now().replace(day=1)
+        current_date = timezone.now().date().replace(day=1)
 
     prev_month = (current_date - timedelta(days=1)).replace(day=1)
     next_month = (current_date + timedelta(days=32)).replace(day=1)
 
-    import calendar
     cal = calendar.monthcalendar(current_date.year, current_date.month)
 
     first_day = current_date.replace(day=1)
     last_day = (current_date + timedelta(days=32)).replace(day=1) - timedelta(days=1)
 
-    habits = Habit.objects.filter(
-        Q(user=request.user, completion_date__range=(first_day, last_day)) |
-        Q(user=request.user, is_template=True)
-    ).distinct()
+    # Получаем все привычки пользователя
+    habits = Habit.objects.filter(user=request.user)
 
-    habits_by_day = {}
-    for habit in habits:
-        if habit.completion_date:
-            day = habit.completion_date.day
-            if day not in habits_by_day:
-                habits_by_day[day] = []
-            habits_by_day[day].append(habit)
+    # Получаем все выполнения привычек за текущий месяц
+    completions = HabitCompletion.objects.filter(
+        habit__user=request.user,
+        date__gte=first_day,
+        date__lte=last_day
+    ).select_related('habit')
 
-    return render(request, 'habits/calendar.html', {
-        'calendar': cal,
+    # Создаем структуру данных для календаря
+    calendar_data = []
+    for week in cal:
+        week_data = []
+        for day in week:
+            day_data = {
+                'day': day,
+                'habits': [],
+                'date': current_date.replace(day=day) if day != 0 else None
+            }
+
+            if day != 0:
+                # Находим привычки, выполненные в этот день
+                day_completions = [c for c in completions if c.date.day == day]
+                for completion in day_completions:
+                    day_data['habits'].append({
+                        'id': completion.habit.id,
+                        'name': completion.habit.name,
+                        'color_class': completion.habit.color_class,
+                        'completed': completion.completed,
+                        'completion_id': completion.id
+                    })
+
+            week_data.append(day_data)
+        calendar_data.append(week_data)
+
+    context = {
+        'calendar': calendar_data,
         'current_date': current_date,
         'prev_month': prev_month,
         'next_month': next_month,
-        'habits_by_day': habits_by_day,
-    })
+        'month_name': current_date.strftime('%B %Y'),
+        'user_habits': habits,
+    }
+
+    return render(request, 'habits/calendar.html', context)
 
 
 @login_required
@@ -530,3 +705,137 @@ def toggle_habit_completion(request, habit_id):
         return JsonResponse({'success': True})
 
     return JsonResponse({'success': False}, status=400)
+
+
+from django.utils import timezone
+from django.http import JsonResponse
+import logging
+
+logger = logging.getLogger(__name__)
+
+@require_POST
+@login_required
+def toggle_completion(request, habit_id):
+    try:
+        habit = Habit.objects.get(id=habit_id, user=request.user)
+        today = timezone.now().date()
+        day_of_week = today.weekday()
+
+        logger.info(f"Попытка переключить выполнение привычки с ID {habit_id} на {today}, день недели: {day_of_week}")
+
+        # Проверяем, запланирована ли привычка на один из доступных дней
+        allowed_days = [d for d in range(day_of_week + 1)]  # Дни от понедельника до сегодня
+
+        if not habit.schedule.filter(day_of_week__in=allowed_days).exists():
+            logger.warning(f"Привычка с ID {habit_id} не запланирована на допустимые дни {allowed_days}")
+            return JsonResponse({
+                'success': False,
+                'error': 'Habit is not scheduled for the allowed days'
+            })
+
+        # Получаем или создаем отметку выполнения
+        completion, created = HabitCompletion.objects.get_or_create(
+            habit=habit,
+            date=today,
+            defaults={'completed': True}
+        )
+
+        if not created:
+            completion.delete()
+            completed = False
+        else:
+            completed = True
+
+        logger.info(f"Статус выполнения привычки с ID {habit_id}: {completed}")
+
+        return JsonResponse({
+            'success': True,
+            'completed': completed,
+            'completion_rate': habit.get_completion_rate(),
+            'current_streak': habit.get_current_streak(),
+            'longest_streak': habit.get_longest_streak()
+        })
+
+    except Habit.DoesNotExist:
+        logger.error(f"Привычка с ID {habit_id} не найдена")
+        return JsonResponse({
+            'success': False,
+            'error': 'Habit not found'
+        })
+    except Exception as e:
+        logger.error(f"Ошибка при переключении выполнения привычки с ID {habit_id}: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+#страница трекера привычек
+@login_required
+def habit_tracker(request):
+    # Получаем все привычки текущего пользователя
+    habits = Habit.objects.filter(user=request.user).prefetch_related('completions')
+
+    # Для каждой привычки добавляем данные о выполнении за последние 30 дней
+    for habit in habits:
+        habit.completion_days = habit.get_completion_days()
+
+    context = {
+        'habits': habits,
+        'total_habits': habits.count(),
+        'today': timezone.now().date(),
+    }
+    return render(request, 'tracker/tracker.html', context)
+
+
+@login_required
+@require_POST
+def mark_habit_completion(request):
+    habit_id = request.POST.get('habit_id')
+    date_str = request.POST.get('completion_date')
+
+    try:
+        habit = Habit.objects.get(id=habit_id, user=request.user)
+        completion_date = timezone.datetime.strptime(date_str, '%Y-%m-%d').date()
+
+        # Проверяем, что дата не в будущем
+        if completion_date > timezone.now().date():
+            return JsonResponse({'success': False, 'error': 'Дата не может быть в будущем'})
+
+        # Создаем или обновляем запись о выполнении
+        completion, created = HabitCompletion.objects.get_or_create(
+            habit=habit,
+            date=completion_date,
+            defaults={'completed': True}
+        )
+
+        if not created:
+            completion.completed = True
+            completion.save()
+
+        return JsonResponse({'success': True})
+
+    except Habit.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Привычка не найдена'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+def get_completion_days(self, days_to_show=30):
+    """Возвращает список дней с информацией о выполнении привычки"""
+    today = timezone.now().date()
+    start_date = today - timedelta(days=days_to_show - 1)
+
+    # Создаем список всех дней в периоде
+    date_list = [start_date + timedelta(days=x) for x in range(days_to_show)]
+
+    # Получаем выполненные дни
+    completed_dates = set(self.completions.filter(
+        date__gte=start_date,
+        date__lte=today
+    ).values_list('date', flat=True))
+
+    # Формируем результат
+    return [{
+        'date': date,
+        'completed': date in completed_dates
+    } for date in date_list]

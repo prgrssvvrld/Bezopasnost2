@@ -1,10 +1,8 @@
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мои привычки</title>
-    {% load static %}
 
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Привычки | Трекер Привычек</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         (function () {
             try {
@@ -18,360 +16,17 @@
         })();
     </script>
 
-    <link rel="stylesheet" type="text/css" href="{% static 'css/main_page.css' %}">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        :root {
-            --borderRadius: 12px;
-            --spacer: 1rem;
-            --primary: #406ff3;
-            --text: #4a5568;
-            --text-light: #718096;
-            --bg: #f8fafc;
-            --bg-secondary: #ffffff;
-            --bg-nav: #ffffff;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --linkHeight: calc(var(--spacer) * 3.5);
-            --timing: 250ms;
-            --transition: all var(--timing) ease;
-            --accent: #ff6b00;
-            --accent-hover: #e05d00;
-        }
+<link rel="stylesheet" type="text/css" href="{% static 'css/main_page.css' %}">
+<body class="bg-gray-50 text-gray-800 font-sans">
+    <!-- Навигационная панель -->
+    <div class="header">
+        <div class="header-content">
+            <!-- Убрана строка с "Проект СФУ" -->
+            <h1>Мои привычки</h1>
+        </div>
+    </div>
 
-        .dark-mode {
-            --bg: #1a202c;
-            --bg-secondary: #2d3748;
-            --bg-third: #2d3748;
-            --bg-nav: #2d3748;
-            --text: #f7fafc;
-            --text_category-name: #ffffff
-            --text-light: #cbd5e0;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.12);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.12);
-        }
 
-        /* Модальное окно - улучшенный дизайн */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1001;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal.show {
-            opacity: 1;
-        }
-
-        .modal-content {
-            background-color: var(--bg-secondary);
-            border-radius: var(--borderRadius);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            width: 90%;
-            max-width: 450px;
-            overflow: hidden;
-            position: relative;
-            transform: translateY(-20px);
-            transition: transform 0.3s ease;
-        }
-
-        .modal.show .modal-content {
-            transform: translateY(0);
-        }
-
-        .modal-header {
-            padding: 1.5rem;
-            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            margin: 0;
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-
-        .close {
-            color: white;
-            font-size: 1.5rem;
-            font-weight: bold;
-            transition: transform 0.2s;
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 0;
-        }
-
-        .close:hover {
-            transform: rotate(90deg);
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-            position: relative;
-            min-height: 450px;
-            overflow: hidden;
-        }
-
-        /* Общие стили для всех контейнеров внутри модального окна */
-        .modal-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--bg-secondary);
-            padding: 1.5rem;
-            transform: translateX(100%);
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow-y: auto;
-        }
-
-        .modal-container.show {
-            transform: translateX(0);
-            opacity: 1;
-        }
-
-        .category-options-container {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .category-options-container.hide {
-            transform: translateX(-100%);
-            opacity: 0;
-            position: absolute;
-        }
-
-        /* Стиль кнопок для выбора категории */
-        .category-options {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-
-        .category-option {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 1.5rem 1rem;
-            border-radius: var(--borderRadius);
-            background-color: var(--bg-third);
-            border: 1px solid #e2e8f0;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            color: var(--text);
-        }
-
-        .category-option:hover {
-            background-color: var(--bg-secondary);
-            transform: translateY(-3px);
-            box-shadow: var(--shadow);
-        }
-
-        .category-option i {
-            font-size: 1.75rem;
-            margin-bottom: 0.75rem;
-            color: var(--accent);
-        }
-
-        .category-option.active {
-            background-color: var(--accent);
-            border-color: var(--accent);
-            color: white;
-        }
-
-        .category-option.active i {
-            color: white;
-        }
-
-        .category-name {
-            font-weight: 500;
-            font-size: 0.9rem;
-            color: var(--text_category-name)
-        }
-
-        /* Стили для формы редактирования */
-        .edit-form {
-            margin-top: 1rem;
-        }
-
-        .edit-form .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .edit-form label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: var(--text);
-        }
-
-        .edit-form input,
-        .edit-form textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #e2e8f0;
-            border-radius: var(--borderRadius);
-            font-family: 'Poppins', sans-serif;
-            transition: border-color 0.3s;
-        }
-
-        .edit-form input:focus,
-        .edit-form textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-
-        .edit-form textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        /* Кнопка "Назад" */
-        .back-button {
-            display: flex;
-            align-items: center;
-            background: none;
-            border: none;
-            color: var(--accent);
-            font-weight: 500;
-            cursor: pointer;
-            padding: 0.5rem 0;
-            margin-bottom: 1rem;
-            transition: color 0.2s;
-        }
-
-        .back-button:hover {
-            color: var(--accent-hover);
-        }
-
-        .back-button::before {
-            content: "←";
-            margin-right: 0.5rem;
-            font-size: 1.2rem;
-        }
-
-        /* Кнопка "Добавить" в списке привычек */
-        .add-habit-btn {
-            display: block;
-            width: 100%;
-            padding: 0.75rem;
-            margin-top: 1rem;
-            background-color: var(--accent);
-            color: white;
-            border: none;
-            border-radius: var(--borderRadius);
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            text-align: center;
-        }
-
-        .add-habit-btn:hover {
-            background-color: var(--accent-hover);
-        }
-
-        .add-habit-btn i {
-            margin-right: 0.5rem;
-        }
-
-        /* Кнопки действий для привычек в модальном окне */
-        .habit-actions-modal {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .habit-actions-modal .btn {
-            flex: 1;
-            padding: 0.5rem;
-            font-size: 0.85rem;
-        }
-
-        .btn-add {
-            background-color: #28a745;
-            color: white;
-        }
-
-        .btn-add:hover {
-            background-color: #218838;
-        }
-
-        /* Адаптивность */
-        @media (max-width: 576px) {
-            .category-options {
-                grid-template-columns: 1fr;
-            }
-
-            .modal-content {
-                width: 95%;
-            }
-        }
-
-        /* Остальные стили из вашего CSS */
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 0;
-            transition: var(--transition);
-        }
-        .user-icon {
-            position: absolute;
-            top: calc(var(--spacer) * 2);
-            right: calc(var(--spacer) * 2);
-            width: calc(var(--linkHeight) * 0.8);
-            height: calc(var(--linkHeight) * 0.8);
-            border-radius: 50%;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: var(--bg-nav);
-            box-shadow: var(--shadow);
-            z-index: 1001;
-            transition: var(--transition);
-        }
-
-        .user-icon a {
-            display: flex;
-            width: 100%;
-            height: 100%;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .user-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .btn-category:hover {
-    box-shadow: var(--shadow);
-}
-
-    </style>
-</head>
-<body>
     <!-- User icon in top right corner -->
     <div class="user-icon">
         <a href="{% url 'profile' %}">
@@ -392,7 +47,7 @@
                 </a>
             </li>
             <li class="navbar__item">
-                <a href="{% url 'dashboard' %}" class="navbar__link" title="Добавить привычку">
+                <a href="{% url 'habits' %}" class="navbar__link" title="Добавить привычку">
                     <i data-feather="edit-3"></i>
                 </a>
             </li>
@@ -424,190 +79,157 @@
         </ul>
     </nav>
 
-    <div class="header">
-        <div class="header-content">
-            <!-- Убрана строка с "Проект СФУ" -->
-            <h1>Мои привычки</h1>
-        </div>
-    </div>
 
-    <div class="container">
-    <div class="habit-form-container">
-        <form method="post" class="habit-form" id="habit-form">
+
+    <!-- Основной контент -->
+    <main class="max-w-7xl mx-auto mt-10 px-4 pb-10 flex flex-col md:flex-row gap-6">
+        <!-- Левая часть - календарь и привычки на день -->
+        <div class="md:w-2/3">
+            <!-- Календарь недели -->
+            <div class="bg-white shadow-lg rounded-2xl p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold">Календарь недели</h2>
+                    <button id="open-modal"
+                            class="flex items-center justify-center w-10 h-10 text-white rounded-full transition"
+                            style="background-color: #FF6B00;">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+                <div id="week-calendar" class="grid grid-cols-7 gap-1"></div>
+            </div>
+
+           <!-- Список привычек на выбранный день -->
+            <div class="bg-white shadow-lg rounded-2xl overflow-hidden">
+                <div class="p-6 border-b">
+                    <h2 class="text-xl font-semibold">Привычки на выбранный день</h2>
+                </div>
+                <div id="habits-list" class="divide-y">
+                    <!-- Список будет заполняться через JavaScript -->
+                </div>
+            </div>
+            </div>
+
+
+        <!-- Правая часть - все привычки пользователя -->
+        <div class="md:w-1/3">
+            <div class="bg-white shadow-lg rounded-2xl overflow-hidden sticky top-24">
+                <div class="p-6 border-b">
+                    <h2 class="text-xl font-semibold">Все ваши привычки</h2>
+                </div>
+                <div id="all-habits-list" class="divide-y max-h-[calc(100vh-200px)] overflow-y-auto"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Модальное окно добавления привычки -->
+    <div id="modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center p-6 border-b sticky top-0 bg-white z-10">
+            <h3 id="modal-title" class="text-xl font-semibold">Добавить новую привычку</h3>
+            <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+
+            <form id="habit-form" class="p-6 space-y-4">
             {% csrf_token %}
-            <div class="form-group">
-                <label for="id_category" class="form-label">
-                    <i class="fas fa-tag"></i> Категория:
-                </label>
-                <input type="hidden" name="category" id="id_category" required>
-                <button type="button" class="btn btn-category" id="open-category-modal">
-                    <i class="fas fa-chevron-down" style="margin-right: 8px;"></i>
-                    <span id="category-text">Выбрать категорию</span>
-                </button>
-                <div id="category-error" class="error-message" style="color: red; display: none;">
-                    Пожалуйста, выберите категорию
-                </div>
-            </div>
-                <div class="form-group">
-                    <label for="id_name" class="form-label">
-                        <i class="fas fa-pencil-alt"></i> Название привычки:
-                        <input type="text" name="name" id="id_name" class="form-input" required placeholder="Например: Утренняя зарядка">
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label for="id_description" class="form-label">
-                        <i class="fas fa-align-left"></i> Описание:
-                        <textarea name="description" id="id_description" class="form-textarea" rows="3" placeholder="Опишите детали привычки..."></textarea>
-                    </label>
-                </div>
-            <input type="hidden" name="days" id="id_days" required>
-                <div class="week-calendar">
-                <div class="week-header">Выберите дни недели:</div>
-                <div class="week-days">
-                    <div class="day" data-weekday="1">Пн</div>
-                    <div class="day" data-weekday="2">Вт</div>
-                    <div class="day" data-weekday="3">Ср</div>
-                    <div class="day" data-weekday="4">Чт</div>
-                    <div class="day" data-weekday="5">Пт</div>
-                    <div class="day" data-weekday="6">Сб</div>
-                    <div class="day" data-weekday="0">Вс</div>
-                </div>
+            <input type="hidden" id="habit-id" name="habit_id" value="">
+
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Название привычки</label>
+                <input type="text" id="name" name="name" required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B00] focus:border-[#FF6B00] transition">
             </div>
 
-                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-plus-circle" style="margin-right: 6px;"></i> Добавить привычку
-                </button>
-            </form>
-        </div>
-
-        <h2>Список привычек:</h2>
-        <div class="user-habits">
-            {% if habits %}
-                            <ul class="habit-list">
-                {% for habit in habits %}
-                    <li class="habit-item" data-id="{{ habit.id }}">
-                        <div class="habit-name">{{ habit.name }}</div>
-                        {% if habit.description %}
-                            <div class="habit-description">{{ habit.description }}</div>
-                        {% endif %}
-                        <div class="habit-actions">
-                            <a href="{% url 'edit_habit' habit.id %}" class="btn btn-edit">
-                                <i class="fas fa-edit" style="margin-right: 6px;"></i> Изменить
-                            </a>
-                            <form method="post" action="{% url 'delete_habit' habit.id %}" style="display: inline;">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-delete" onclick="return confirm('Вы уверены, что хотите удалить эту привычку?')">
-                                    <i class="fas fa-trash-alt" style="margin-right: 6px;"></i>Удалить
-                                </button>
-                            </form>
-                        </div>
-                    </li>
-                {% endfor %}
-            </ul>
-
-            {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-clipboard-list"></i>
-                    <h3>У вас пока нет привычек</h3>
-                    <p>Добавьте свою первую привычку, используя форму выше</p>
-                </div>
-            {% endif %}
-        </div>
-
-
-    </div>
-
-    <!-- Модальное окно для выбора категории -->
-    <div id="category-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Выберите категорию</h2>
-                <button class="close" id="close-category-modal">&times;</button>
+            <div>
+                <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Категория</label>
+                <select id="category" name="category" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF6B00] focus:border-[#FF6B00] transition">
+                    <option value="health">Здоровье</option>
+                    <option value="productivity">Продуктивность</option>
+                    <option value="learning">Обучение</option>
+                    <option value="relationships">Отношения</option>
+                    <option value="finance">Финансы</option>
+                </select>
             </div>
-            <div class="modal-body">
-                <!-- Контейнер для выбора категорий -->
-                <div id="category-options-container" class="modal-container">
-                    <div class="category-options">
-                        <div class="category-option" data-id="1" data-category="Учеба">
-                            <i class="fas fa-graduation-cap"></i>
-                            <span class="category-name">Учёба</span>
-                        </div>
-                        <div class="category-option" data-id="2" data-category="Спорт">
-                            <i class="fas fa-running"></i>
-                            <span class="category-name">Спорт</span>
-                        </div>
-                        <div class="category-option" data-id="3" data-category="Здоровье">
-                            <i class="fas fa-heartbeat"></i>
-                            <span class="category-name">Здоровье</span>
-                        </div>
-                        <div class="category-option" data-id="4" data-category="Работа">
-                            <i class="fas fa-briefcase"></i>
-                            <span class="category-name">Работа</span>
-                        </div>
-                        <div class="category-option" data-id="5" data-category="Досуг">
-                            <i class="fas fa-gamepad"></i>
-                            <span class="category-name">Досуг</span>
-                        </div>
-                        <div class="category-option" data-id="6" data-category="Другое">
-                            <i class="fas fa-ellipsis-h"></i>
-                            <span class="category-name">Другое</span>
-                        </div>
-                    </div>
+
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Описание</label>
+                    <textarea id="description" name="description" rows="3"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"></textarea>
                 </div>
 
-                <!-- Контейнер для списка привычек в выбранной категории -->
-                <div id="habit-list-container" class="modal-container">
-    <button class="back-button" id="back-to-categories">Назад к категориям</button>
-    <h3>Привычки в выбранной категории:</h3>
-    <ul class="habit-list"></ul>
-         <!-- Внутри modal-body, после back-button -->
-<div class="week-calendar">
-    <div class="week-header">Выберите дни недели:</div>
-    <div class="week-days">
-        <div class="day" data-weekday="1">Пн</div>
-        <div class="day" data-weekday="2">Вт</div>
-        <div class="day" data-weekday="3">Ср</div>
-        <div class="day" data-weekday="4">Чт</div>
-        <div class="day" data-weekday="5">Пт</div>
-        <div class="day" data-weekday="6">Сб</div>
-        <div class="day" data-weekday="0">Вс</div>
-    </div>
-</div>
+                <div>
+                    <label for="days_goal" class="block text-sm font-medium text-gray-700 mb-1">Цель в днях</label>
+                    <input type="number" id="days_goal" name="days_goal" min="1" value="30" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                </div>
 
-<div class="selected-dates-info">
-    <p>Выбранные дни: <span id="selected-days-text">не выбраны</span></p>
-</div>
-
-
-    <button class="add-habit-btn" id="add-habit-in-modal">
-        <i class="fas fa-plus-circle"></i> Добавить свою привычку
-    </button>
-</div>
-
-                <!-- Контейнер для редактирования привычки -->
-                <div id="edit-habit-container" class="modal-container">
-                    <button class="back-button" id="back-to-habit-list">Назад к привычкам</button>
-                    <h3>Редактировать привычку</h3>
-                    <form id="edit-habit-form" class="edit-form">
-                        <input type="hidden" name="habit_id" id="edit-habit-id">
-                        <div class="form-group">
-                            <label for="edit-habit-name">Название:</label>
-                            <input type="text" id="edit-habit-name" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="edit-habit-description">Описание:</label>
-                            <textarea id="edit-habit-description" class="form-control"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save" style="margin-right: 6px;"></i> Сохранить
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Цвет</label>
+                    <div class="flex items-center space-x-3">
+                        <div id="selected-color" class="w-6 h-6 rounded-full bg-gray-200"></div>
+                        <input type="hidden" id="color" name="color" value="bg-gray-100 text-gray-800">
+                        <button type="button" onclick="document.getElementById('color-options').classList.toggle('hidden')"
+                                class="text-sm text-indigo-600 hover:text-indigo-800">
+                            Выбрать цвет
                         </button>
-                    </form>
+                    </div>
+                    <div id="color-options" class="hidden mt-2 space-y-1 border rounded-lg p-2"></div>
                 </div>
+
+                 <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Повторение</label>
+                <div class="grid grid-cols-7 gap-2">
+                    <label class="flex items-center justify-center p-2 border rounded-lg cursor-pointer hover:bg-[#FF6B00] hover:text-white transition">
+                        <input type="checkbox" class="hidden peer" name="days" value="0">
+                        <span class="peer-checked:bg-[#FF6B00] peer-checked:text-white px-3 py-1 rounded-full text-sm">Пн</span>
+                    </label>
+                    <label class="flex items-center justify-center p-2 border rounded-lg cursor-pointer hover:bg-[#FF6B00] hover:text-white transition">
+                        <input type="checkbox" class="hidden peer" name="days" value="1">
+                        <span class="peer-checked:bg-[#FF6B00] peer-checked:text-white px-3 py-1 rounded-full text-sm">Вт</span>
+                    </label>
+                    <label class="flex items-center justify-center p-2 border rounded-lg cursor-pointer hover:bg-[#FF6B00] hover:text-white transition">
+                        <input type="checkbox" class="hidden peer" name="days" value="2">
+                        <span class="peer-checked:bg-[#FF6B00] peer-checked:text-white px-3 py-1 rounded-full text-sm">Ср</span>
+                    </label>
+                    <label class="flex items-center justify-center p-2 border rounded-lg cursor-pointer hover:bg-[#FF6B00] hover:text-white transition">
+                        <input type="checkbox" class="hidden peer" name="days" value="3">
+                        <span class="peer-checked:bg-[#FF6B00] peer-checked:text-white px-3 py-1 rounded-full text-sm">Чт</span>
+                    </label>
+                    <label class="flex items-center justify-center p-2 border rounded-lg cursor-pointer hover:bg-[#FF6B00] hover:text-white transition">
+                        <input type="checkbox" class="hidden peer" name="days" value="4">
+                        <span class="peer-checked:bg-[#FF6B00] peer-checked:text-white px-3 py-1 rounded-full text-sm">Пт</span>
+                    </label>
+                    <label class="flex items-center justify-center p-2 border rounded-lg cursor-pointer hover:bg-[#FF6B00] hover:text-white transition">
+                        <input type="checkbox" class="hidden peer" name="days" value="5">
+                        <span class="peer-checked:bg-[#FF6B00] peer-checked:text-white px-3 py-1 rounded-full text-sm">Сб</span>
+                    </label>
+                    <label class="flex items-center justify-center p-2 border rounded-lg cursor-pointer hover:bg-[#FF6B00] hover:text-white transition">
+                        <input type="checkbox" class="hidden peer" name="days" value="6">
+                        <span class="peer-checked:bg-[#FF6B00] peer-checked:text-white px-3 py-1 rounded-full text-sm">Вс</span>
+                    </label>
+                </div>
+            </div>
+        </form>
+
+            <div class="p-6 border-t flex justify-between sticky bottom-0 bg-white">
+            <button id="generate-habit" type="button" class="px-4 py-2 border border-[#FF6B00] text-[#FF6B00] rounded-lg hover:bg-[#FF6B00] hover:text-white transition">
+                Сгенерировать привычку
+            </button>
+            <div class="space-x-3">
+                <button type="submit" form="habit-form" class="px-4 py-2 bg-[#FF6B00] text-white rounded-lg hover:bg-[#E05F00] transition">Сохранить</button>
             </div>
         </div>
     </div>
-<!-- Feather icons -->
-<script src="https://unpkg.com/feather-icons"></script>
+</div>
+
+    <script src="https://unpkg.com/feather-icons"></script>
     <script>
 
     const themeToggle = document.getElementById('theme-toggle');
@@ -675,6 +297,5 @@ function onCategorySelected(categoryId, categoryName) {
 <script src="{% static 'js/main_page.js' %}"
     feather.replace();
 ></script>
-
 </body>
 </html>

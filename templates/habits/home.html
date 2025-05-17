@@ -43,7 +43,7 @@
                 </a>
             </li>
             <li class="navbar__item">
-                <a href="{% url 'dashboard' %}" class="navbar__link" title="Добавить привычку">
+                <a href="{% url 'habits' %}" class="navbar__link" title="Добавить привычку">
                     <i data-feather="edit-3"></i>
                 </a>
             </li>
@@ -127,7 +127,7 @@
             {% endfor %}
 
             <div class="add-habit">
-                <a href="{% url 'dashboard' %}">
+                <a href="{% url 'habits' %}">
                     <i data-feather="plus"></i>
                     Добавить привычку
                 </a>
