@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Подтверждение почты</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/sign_up.css' %}">
+</head>
+<body>
+    <div class="background"></div>
+    <div class="balloons"></div>
+
+    <form method="post">
+        {% csrf_token %}
+        <h2>Подтверждение почты</h2>
+
+        <p>На ваш email был отправлен код подтверждения.</p>
+        <p>Пожалуйста, проверьте почту и введите код:</p>
+
+        <input type="hidden" name="email" value="{{ request.GET.email }}">
+
+        <label for="verification_code">Код подтверждения:</label>
+        <input type="text" name="verification_code" id="verification_code" required
+               placeholder="Введите 6-значный код">
+
+        <button type="submit">Подтвердить</button>
+
+        {% if messages %}
+            <div class="alert alert-error">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </form>
+</body>
+</html>

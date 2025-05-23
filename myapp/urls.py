@@ -43,5 +43,6 @@ urlpatterns = [
 #календарь
     path('calendar/', views.calendar_view, name='calendar'),
     path('api/habits/by-date/', views.habits_by_date, name='habits_by_date'),
+    path('verify-code/', views.verify_code, name='verify_code'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

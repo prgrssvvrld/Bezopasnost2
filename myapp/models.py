@@ -42,6 +42,10 @@ class CustomUser(AbstractUser):
     def __str__(self):  # Corrected to __str__
         return self.username
 
+    verification_code = models.CharField(max_length=6, blank=True, null=True)
+    is_verified = models.BooleanField(default=False)
+    verification_code_created_at = models.DateTimeField(null=True, blank=True)
+
 
 class Habit(models.Model):
     CATEGORY_CHOICES = [

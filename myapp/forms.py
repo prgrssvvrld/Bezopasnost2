@@ -3,6 +3,9 @@ from .models import Habit, CustomUser, HabitCompletion, HabitSchedule # Убед
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+import random
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 class HabitForm(forms.ModelForm):
@@ -100,6 +103,31 @@ class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = CustomUser
         fields = ['username', 'email', 'password1', 'password2']
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        verification_code = str(random.randint(100000, 999999))
+        user.verification_code = verification_code
+        user.is_active = False  # Пользователь не активен до подтверждения
+
+        if commit:
+            user.save()
+
+            # Отправка кода в консоль
+            print(f"\n\n=== Код подтверждения для {user.email} ===\n"
+                  f"Код: {verification_code}\n"
+                  f"===============================\n\n")
+
+            # Отправка кода на почту
+            send_mail(
+                'Код подтверждения регистрации',
+                f'Ваш код подтверждения: {verification_code}',
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+
+        return user
 
 
 class ProfileForm(forms.ModelForm):

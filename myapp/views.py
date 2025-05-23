@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
-from .models import Habit
+from .models import Habit, CustomUser
 from .forms import HabitForm, ProfileForm, CustomUserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse, HttpResponseBadRequest
@@ -43,6 +43,8 @@ from django.views.decorators.http import require_GET
 from datetime import datetime
 from datetime import timedelta
 import json
+from django.utils import timezone
+from datetime import timedelta
 
 User = get_user_model()
 
@@ -51,6 +53,31 @@ def welcome_page(request):
     return render(request, 'registration/welcome.html')
 
 
+def verify_code(request):
+    if request.method == 'POST':
+        code = request.POST.get('verification_code')
+        email = request.POST.get('email')
+
+        try:
+            user = CustomUser.objects.get(email=email, verification_code=code)
+
+            # Проверка срока действия кода (например, 10 минут)
+            if (timezone.now() - user.verification_code_created_at) > timedelta(minutes=10):
+                messages.error(request, 'Срок действия кода истёк. Запросите новый.')
+                return redirect('sign_up')
+
+            user.is_verified = True
+            user.is_active = True
+            user.save()
+
+            login(request, user)
+            messages.success(request, 'Почта успешно подтверждена!')
+            return redirect('home')
+
+        except CustomUser.DoesNotExist:
+            messages.error(request, 'Неверный код подтверждения')
+
+    return render(request, 'registration/verify_code.html')
 def home_page(request):
     user = request.user
     today = timezone.now().date()
@@ -365,20 +392,14 @@ def signup(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            try:
-                # Валидация пароля
-                validate_password(form.cleaned_data['password1'])
+            user = form.save()
 
-                user = form.save()
-                login(request, user)
-                return redirect('home')
-            except ValidationError as e:
-                for error in e.messages:
-                    messages.error(request, error)
-        else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"{field}: {error}")
+            # Сохраняем время создания кода
+            user.verification_code_created_at = timezone.now()
+            user.save()
+
+            # Перенаправляем на страницу ввода кода
+            return redirect(f'/verify-code/?email={user.email}')
     else:
         form = CustomUserCreationForm()
     return render(request, 'registration/sign_up.html', {'form': form})

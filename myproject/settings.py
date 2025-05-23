@@ -166,11 +166,14 @@ LOGOUT_REDIRECT_URL = 'login'
 AUTH_USER_MODEL = 'myapp.CustomUser'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'ваш_email@gmail.com'
-EMAIL_HOST_PASSWORD = 'ваш_пароль'
+EMAIL_HOST_USER = 'shramenkov110@gmail.com' #ЗАМЕНИТЬ ПОЧТУ НА СВОЮ
+EMAIL_HOST_PASSWORD = 'jwgs lmam nizc khsr'#ВЗЯТЬ ИЗ ГУГЛ ПОЧТЫ СВОЙ КОД ПАРОЛЕЙ И ВСТАВИТЬ(ЭТО МОЙ)
+#jwgs lmam nizc khsr
+DEFAULT_FROM_EMAIL = 'my@gmail.com'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
