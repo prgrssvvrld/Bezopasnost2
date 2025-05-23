@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const today = new Date();
     let currentDate = new Date();
     let selectedDate = new Date();
-//    let currentSelectedDay = today.getDay(); // 0-6 (0 - воскресенье)
     let currentSelectedDay = (today.getDay() + 6) % 7;
 
 
@@ -28,11 +27,11 @@ function getCSRFToken() {
     function showNotification(message) {
     const notification = document.createElement('div');
     notification.classList.add(
-        'fixed', 'top-4', 'right-4',
+        'fixed', 'top-24', 'right-4',  // Смещение вниз под аватаркой
         'text-white', 'p-4', 'rounded-lg', 'shadow-lg',
         'transition', 'opacity-0', 'z-50'
     );
-    notification.style.backgroundColor = '#FF6B00';
+    notification.style.backgroundColor = '#b84300'; // Чуть темнее цвет
 
     notification.innerHTML = `<p>${message}</p>`;
     document.body.appendChild(notification);
@@ -43,10 +42,9 @@ function getCSRFToken() {
     // Автоматическое скрытие через 3 секунды
     setTimeout(() => {
         notification.classList.add('opacity-0');
-        setTimeout(() => notification.remove(), 300); // Удаляем элемент после скрытия
+        setTimeout(() => notification.remove(), 300);
     }, 3000);
 }
-
 
 
     // Функция для отображения календаря
@@ -74,9 +72,11 @@ function getCSRFToken() {
             };
 
             dayElement.innerHTML = `
-                <div class="text-sm font-medium">${weekDays[i]}</div>
-                 <div class="text-lg ${isSameDay(day, today) ? 'font-bold text-[rgba(255,107,0,1)]' : ''}">${day.getDate()}</div>
-
+                <div class="relative w-full">
+                    <span class="day-label text-sm font-medium">${weekDays[i]}</span>
+                    <span class="indicator absolute top-1 right-1 w-3 h-3 rounded-full bg-[#FF6B00] opacity-0 transition-opacity"></span>
+                </div>
+                <div class="text-lg ${isSameDay(day, today) ? 'font-bold text-[#FF6B00]' : ''}">${day.getDate()}</div>
             `;
 
             calendar.appendChild(dayElement);
@@ -85,6 +85,26 @@ function getCSRFToken() {
         // Обновляем список привычек для выбранного дня
         updateHabitsList();
     }
+    //показ точки рядом с днем недели при добавлении или обновлении привычки
+    function showIndicatorForDay(weekdayIndex) {
+    const calendar = document.getElementById('week-calendar');
+    // Получаем все дни недели (div-элементы внутри календаря)
+    const days = calendar.children;
+
+    if (weekdayIndex < 0 || weekdayIndex > 6) return;
+
+    // В каждом дне ищем элемент .indicator и меняем opacity
+    const indicator = days[weekdayIndex].querySelector('.indicator');
+    if (!indicator) return;
+
+    // Показываем точку
+    indicator.style.opacity = '1';
+
+    // Через 3 секунды скрываем
+    setTimeout(() => {
+        indicator.style.opacity = '0';
+    }, 3000);
+}
 
     // Функция выбора даты
     function selectDate(date) {
@@ -119,18 +139,21 @@ function getCSRFToken() {
                 } else {
                     habitsList.innerHTML = '';
                     data.habits.forEach(habit => {
-                        // Передаем true для showCompletion
-                        habitsList.appendChild(createHabitElement(habit, false, true));
-                    });
+    habitsList.appendChild(createHabitElement(habit, false, true, selectedDateStr));
+});
+
 
                     // Добавляем обработчики событий для новых элементов
                     addCompletionHandlers();
+
                 }
             }
+
         })
         .catch(error => {
             console.error('Error:', error);
         });
+
 }
 
 // Добавьте эту новую функцию для обработки кнопок выполнения:
@@ -140,19 +163,17 @@ function addCompletionHandlers() {
             e.preventDefault();
             const habitId = this.dataset.habitId;
             const button = this.querySelector('button');
-            const selectedDate = document.getElementById('selected-date')?.value || new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
-            // Допустим, ты получаешь дату из скрытого input внутри формы
             const dateInput = this.querySelector('input[name="date"]');
-            const date = dateInput ? dateInput.value : null;
+            const date = dateInput ? dateInput.value : new Date().toISOString().slice(0, 10); // fallback to today
 
             fetch(`/api/toggle-completion/${habitId}/`, {
-               method: 'POST',
+                method: 'POST',
                 headers: {
                     'X-CSRFToken': getCSRFToken(),
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `date=${encodeURIComponent(selectedDate)}`  // 👈 передаём дату
+                body: `date=${encodeURIComponent(date)}`
             })
             .then(response => response.json())
             .then(data => {
@@ -179,6 +200,7 @@ function addCompletionHandlers() {
 }
 
 
+
     // Функция загрузки всех привычек пользователя
     function loadAllHabits() {
     fetch('/habits/get_all/')
@@ -199,7 +221,7 @@ function addCompletionHandlers() {
 
 
     // Создание элемента привычки (только категория окрашивается)
-    function createHabitElement(habit, showDays = false, showCompletion = false) {
+    function createHabitElement(habit, showDays = false, showCompletion = false, dateStr = null) {
     const element = document.createElement('div');
     element.className = 'p-4 hover:bg-gray-50 transition bg-white border-b';
     element.dataset.habitId = habit.id;
@@ -230,13 +252,14 @@ const selectedDateObj = new Date(selectedDate); // selectedDate должен б�
 const isFutureDate = selectedDateObj > today;
 
 const completionSection = showCompletion ? `
-<div class="flex flex-col items-end">
-    <form class="habit-completion-form" data-habit-id="${habit.id}">
-        <button type="submit" class="${
-            habit.is_completed_today ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-        } text-xs px-3 py-1 rounded-full transition"
-        ${isFutureDate ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
-            ${habit.is_completed_today ? '✓ Выполнено' : 'Отметить'}
+    <div class="flex flex-col items-end">
+        <form class="habit-completion-form" data-habit-id="${habit.id}">
+            <input type="hidden" name="date" value="${dateStr}">
+            <button type="submit" class="${
+                habit.is_completed_today ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+            } text-xs px-3 py-1 rounded-full transition"
+            ${isFutureDate ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+                ${habit.is_completed_today ? '✓ Выполнено' : 'Отметить'}
         </button>
     </form>
     <div class="mt-2 text-xs text-gray-500 progress-text">
@@ -247,6 +270,7 @@ const completionSection = showCompletion ? `
     </div>
 </div>
 ` : '';
+
 
 
     const rightSection = `
@@ -431,6 +455,7 @@ function saveHabit() {
         if (data.success) {
             console.log('Привычка сохранена!', data.habit);
 
+
             // Уведомление в зависимости от типа (добавление или редактирование)
             if (isEdit) {
                 showNotification('Привычка успешно отредактирована!', 'edit');
@@ -450,6 +475,12 @@ function saveHabit() {
             addHabitToAllHabitsList(data.habit);
             addHabitToSelectedDayList(data.habit);
             addCompletionHandlers();
+
+            if (data.habit.schedule_days && data.habit.schedule_days.length > 0) {
+                data.habit.schedule_days.forEach(dayIndex => {
+                    showIndicatorForDay(dayIndex);
+                });
+            }
 
             closeModal();
         } else {
@@ -487,7 +518,9 @@ function saveHabit() {
             }
 
             habitsList.appendChild(habitElement);
+
         }
+
     }
 
     // Инициализация

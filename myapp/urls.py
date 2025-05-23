@@ -21,16 +21,13 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('habits/<int:habit_id>/toggle/', views.toggle_habit_completion, name='toggle_habit_completion'),
-
     path('api/habits/category/<int:category_param>/', views.filter_habits_by_category, name='filter_habits_by_category'),
 
-
-
-
+#настройки
     path('settings/', views.settings_view, name='settings'),
     path('change-password/', views.settings_view, name='change_password'),
-    path('calendar/', views.calendar_view, name='calendar'),
 
+#faq
     path('faq/', views.faq_view, name='faq'),
 
 #новые
@@ -42,5 +39,9 @@ urlpatterns = [
     path('habits/update/<int:id>/', views.update_habit, name='update_habit'),
     path('habits/get/<int:id>/', views.get_habit, name='get_habit'),
     path('api/toggle-completion/<int:habit_id>/', views.toggle_completion, name='toggle_completion'),
+
+#календарь
+    path('calendar/', views.calendar_view, name='calendar'),
+    path('api/habits/by-date/', views.habits_by_date, name='habits_by_date'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

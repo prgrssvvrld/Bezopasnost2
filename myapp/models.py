@@ -5,6 +5,7 @@ from django.conf import settings  # Import settings for AUTH_USER_MODEL
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import Group, Permission  # Import Group and Permission
 from django.utils.translation import gettext_lazy as _  # For translating verbose_name
+from datetime import timedelta
 
 
 class CustomUser(AbstractUser):
@@ -127,8 +128,7 @@ class Habit(models.Model):
         return longest
 
     def get_completion_rate(self):
-        """Возвращает процент выполнения привычки (выполненные дни / цель)"""
-        total_completions = self.completions.count()
+        total_completions = self.completions.filter(completed=True).count()
         return min(100, int((total_completions / self.days_goal) * 100))
 
     def is_completed_today(self):
@@ -137,8 +137,7 @@ class Habit(models.Model):
         return self.completions.filter(date=today).exists()
 
     def is_completed_on(self, date):
-        """Проверка, выполнена ли привычка в указанный день"""
-        return self.completions.filter(date=date).exists()
+        return self.completions.filter(date=date, completed=True).exists()
 
     def mark_as_completed(self):
         """Отмечает привычку как выполненную на сегодня"""
@@ -154,30 +153,31 @@ class Habit(models.Model):
         return self.completions.filter(date=date).exists()
 
     def get_completion_days(self):
-        """Возвращает список дней с момента создания привычки до days_goal дней вперед"""
-        from datetime import timedelta
+        scheduled_days = list(self.schedule.values_list('day_of_week', flat=True))
+        if not scheduled_days:
+            return []
 
-        days_to_show = self.days_goal
-        start_date = self.created_at.date()
-        end_date = start_date + timedelta(days=days_to_show - 1)
+        start_date = self.created_at.date() if self.created_at else timezone.now().date()
+        completion_days = []
+        current_date = start_date
+        max_days_to_check = 365
 
-        # Создаем список всех дней в периоде
-        date_list = [start_date + timedelta(days=x) for x in range(days_to_show)]
+        while len(completion_days) < self.days_goal and (current_date - start_date).days < max_days_to_check:
+            if current_date.weekday() in scheduled_days:
+                completion_days.append(current_date)
+            current_date += timedelta(days=1)
 
-        # Получаем выполненные дни
         completed_dates = set(
             self.completions.filter(
-                date__gte=start_date,
-                date__lte=end_date,
+                date__in=completion_days,
                 completed=True
             ).values_list('date', flat=True)
         )
 
-        # Формируем результат
         return [{
             'date': date,
             'completed': date in completed_dates
-        } for date in date_list]
+        } for date in completion_days]
 
 
 class HabitSchedule(models.Model):
