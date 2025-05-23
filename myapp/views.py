@@ -52,9 +52,27 @@ def welcome_page(request):
 
 
 def home_page(request):
-    return render(request, 'habits/home.html', {
+    user = request.user
+    today = timezone.now().date()
+    weekday = today.weekday()  # 0 = понедельник
 
-    })
+    habits = Habit.objects.filter(user=user)
+    habits_today = habits.filter(schedule__day_of_week=weekday).distinct()
+    streaks = [habit.get_current_streak() for habit in habits]
+    average_streak = round(sum(streaks) / len(streaks)) if streaks else 0
+
+    completed_today = HabitCompletion.objects.filter(
+        habit__in=habits_today, date=today, completed=True
+    ).values_list('habit_id', flat=True)
+
+    context = {
+        'habits': habits,
+        'habits_today': habits_today,
+        'completed_today': completed_today,
+        'average_streak': average_streak,
+    }
+
+    return render(request, 'habits/home.html', context)
 
 def toggle_habit(request, habit_id):
     habit = get_object_or_404(Habit, id=habit_id, user=request.user)
@@ -902,6 +920,8 @@ def habits_by_date(request):
                 'category': habit.category,
                 'description': habit.description,
                 'completed': habit.is_completed_on(target_date),
+                'schedule_days': list(habit.schedule.values_list('day_of_week', flat=True)),
+                'date': target_date.isoformat(),  # ✅ ДОБАВИ ЭТО
             })
 
     return JsonResponse(results, safe=False)

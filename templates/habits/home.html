@@ -3,24 +3,10 @@
 {% block header %}Трекер привычек{% endblock %}
 {% load static %}
 
-<script>
-    (function () {
-        try {
-            const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
-            if (isDark) {
-                document.documentElement.classList.add('dark-mode');
-            }
-        } catch (e) {}
-    })();
-</script>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Трекер привычек - Главная</title>
 {% block extra_css %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/home.css' %}">
 {% endblock %}
+
 {% block content %}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
@@ -83,12 +69,12 @@
 
         <div class="stats-cards">
             <div class="card">
-                <p class="card__title">Всего привычек</p>
-                <p class="card__value">{{ habits.count }}</p>
+                <p class="card__title">Средняя серия</p>
+                <p class="card__value">{{ average_streak }}</p>
             </div>
             <div class="card">
                 <p class="card__title">Выполнено сегодня</p>
-                <p class="card__value">{{ completed_today.count }}/{{ habits_today.count }}</p>
+                <p class="card__value">{{ completed_today|length }}/{{ habits_today.count }}</p>
             </div>
         </div>
 
@@ -99,12 +85,16 @@
             <div class="habit-item">
                 <div class="habit-info">
                     <div class="habit-icon">
-                        {% if habit.category.name == "Спорт" %}
-                            <i data-feather="activity"></i>
-                        {% elif habit.category.name == "Чтение" %}
-                            <i data-feather="book"></i>
-                        {% elif habit.category.name == "Здоровье" %}
+                        {% if habit.category == 'health' %}
                             <i data-feather="heart"></i>
+                        {% elif habit.category == 'learning' %}
+                            <i data-feather="book-open"></i>
+                        {% elif habit.category == 'productivity' %}
+                            <i data-feather="check-square"></i>
+                        {% elif habit.category == 'relationships' %}
+                            <i data-feather="users"></i>
+                        {% elif habit.category == 'finance' %}
+                            <i data-feather="dollar-sign"></i>
                         {% else %}
                             <i data-feather="check-circle"></i>
                         {% endif %}
@@ -112,12 +102,14 @@
                     <div>
                         <div class="habit-name">{{ habit.name }}</div>
                         <div class="habit-streak">
-                            Дни: {% for day in habit.weekdays.all %}{{ day.get_day_of_week_display }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                            Дни: {% for day in habit.schedule.all %}
+                                {{ day.get_day_of_week_display }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
                         </div>
-                        <div class="habit-category">{{ habit.category.name }}</div>
+                        <div class="habit-category">{{ habit.get_category_display }}</div>
                     </div>
                 </div>
-                <div class="habit-check {% if habit in completed_today %}checked{% endif %}"
+                <div class="habit-check {% if habit.id in completed_today %}checked{% endif %}"
                      data-habit-id="{{ habit.id }}"
                      onclick="toggleHabitCompletion(this, {{ habit.id }})">
                 </div>
@@ -135,8 +127,9 @@
         </div>
     </main>
 
-    <script src="https://unpkg.com/feather-icons"></script>
     <script>
+        feather.replace();
+
         const themeToggle = document.getElementById('theme-toggle');
         const root = document.documentElement;
 
@@ -160,8 +153,6 @@
             themeToggle.innerHTML = iconHtml;
         }
 
-        feather.replace();
-
         let nav = document.querySelector('.navbar');
         let timeout;
 
@@ -176,12 +167,27 @@
             }, 500);
         });
 
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    cookie = cookie.trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
         function toggleHabitCompletion(element, habitId) {
             fetch(`/habits/${habitId}/toggle/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
+                    'X-CSRFToken': getCookie('csrftoken')
                 },
                 body: JSON.stringify({})
             })
@@ -191,7 +197,7 @@
                     element.classList.toggle('checked');
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => console.error('Ошибка:', error));
         }
     </script>
 {% endblock %}

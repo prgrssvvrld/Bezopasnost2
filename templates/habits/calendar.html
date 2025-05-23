@@ -13,268 +13,291 @@
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
+            gap: 10px;
         }
         .calendar-day {
-            min-height: 80px;
+            min-height: 110px;
+            transition: all 0.2s ease;
+            border-radius: 12px;
+        }
+        .calendar-day:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(255, 107, 0, 0.2);
+            border-color: #FF6B00;
         }
         .habit-indicator {
-            width: 6px;
-            height: 6px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             display: inline-block;
-            margin-right: 2px;
+            margin-right: 3px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .today-highlight {
+            background: linear-gradient(135deg, #FF6B00 0%, #FF9248 100%);
+            color: white !important;
+        }
+        .weekend-day {
+            background-color: #FFF5F0;
         }
     </style>
 
 <body class="bg-gray-50">
-    <div class="container mx-auto px-4 py-8 max-w-4xl">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
         <!-- Заголовок и навигация -->
         <div class="flex justify-between items-center mb-8">
             <div class="flex space-x-4">
-                <button id="prev-month" class="text-[#FF6B00] hover:text-[#e05a00] px-3 py-1 rounded-lg">
-                    <i class="fas fa-chevron-left mr-1"></i>Предыдущий
+                <button id="prev-month" class="bg-white text-[#FF6B00] hover:bg-[#FF6B00] hover:text-white px-4 py-2 rounded-lg shadow-md flex items-center transition-all duration-200 border border-[#FF6B00]">
+                    <i class="fas fa-chevron-left mr-2"></i>Предыдущий
                 </button>
-                <button id="next-month" class="text-[#FF6B00] hover:text-[#e05a00] px-3 py-1 rounded-lg">
-                    Следующий<i class="fas fa-chevron-right ml-1"></i>
+                <button id="next-month" class="bg-white text-[#FF6B00] hover:bg-[#FF6B00] hover:text-white px-4 py-2 rounded-lg shadow-md flex items-center transition-all duration-200 border border-[#FF6B00]">
+                    Следующий<i class="fas fa-chevron-right ml-2"></i>
                 </button>
             </div>
+            <button id="today-btn" class="bg-[#FF6B00] hover:bg-[#E05A00] text-white px-6 py-2 rounded-lg shadow-md font-medium transition-all duration-200 transform hover:scale-105">
+                Сегодня
+            </button>
         </div>
 
         <!-- Месячный календарь -->
-        <div class="bg-white rounded-xl shadow-md p-6">
+        <div class="bg-white rounded-2xl shadow-lg p-6">
             <!-- Заголовок месяца -->
             <div class="flex justify-between items-center mb-6">
-                <h2 id="current-month" class="text-2xl font-semibold text-gray-800"></h2>
-                <div class="flex space-x-2">
-                    <button id="today-btn" class="text-sm text-[#FF6B00] hover:text-[#e05a00] px-3 py-1 border border-[#FF6B00] rounded-lg">
-                        Сегодня
-                    </button>
-                </div>
+                <h2 id="current-month" class="text-3xl font-bold text-gray-800"></h2>
+                <div id="month-stats" class="text-sm font-medium text-[#FF6B00] bg-[#FFF0E6] px-3 py-1 rounded-full"></div>
             </div>
 
             <!-- Дни недели -->
-            <div class="grid grid-cols-7 gap-1 mb-2 text-center font-medium text-gray-600">
+            <div class="grid grid-cols-7 gap-2 mb-4 text-center font-medium text-gray-600">
                 <div>Пн</div>
                 <div>Вт</div>
                 <div>Ср</div>
                 <div>Чт</div>
                 <div>Пт</div>
-                <div>Сб</div>
-                <div>Вс</div>
+                <div class="text-blue-500">Сб</div>
+                <div class="text-blue-500">Вс</div>
             </div>
 
             <!-- Сетка календаря -->
             <div id="calendar" class="calendar-grid"></div>
         </div>
-
-        <!-- Легенда -->
-        <div class="mt-6 bg-white rounded-xl shadow-md p-4">
-            <h3 class="text-lg font-medium mb-3">Легенда</h3>
-            <div class="flex flex-wrap gap-4">
-                <div class="flex items-center">
-                    <span class="habit-indicator bg-red-500"></span>
-                    <span class="ml-2 text-sm">Здоровье</span>
-                </div>
-                <div class="flex items-center">
-                    <span class="habit-indicator bg-blue-500"></span>
-                    <span class="ml-2 text-sm">Продуктивность</span>
-                </div>
-                <div class="flex items-center">
-                    <span class="habit-indicator bg-green-500"></span>
-                    <span class="ml-2 text-sm">Обучение</span>
-                </div>
-                <div class="flex items-center">
-                    <span class="habit-indicator bg-purple-500"></span>
-                    <span class="ml-2 text-sm">Отношения</span>
-                </div>
-                <div class="flex items-center">
-                    <span class="habit-indicator bg-yellow-500"></span>
-                    <span class="ml-2 text-sm">Финансы</span>
-                </div>
-                <div class="flex items-center">
-                    <div class="w-3 h-3 border-2 border-[#FF6B00] rounded-sm"></div>
-                    <span class="ml-2 text-sm">Сегодня</span>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-    const today = new Date();
-    let currentMonth = today.getMonth();
-    let currentYear = today.getFullYear();
+        const today = new Date();
+        let currentMonth = today.getMonth();
+        let currentYear = today.getFullYear();
+        let totalHabitsThisMonth = 0;
 
-
-    // Новая структура цветов
-    const habitColors = [
-        { name: 'Красный', value: 'bg-red-300 text-red-800' },
-        { name: 'Синий', value: 'bg-blue-300 text-blue-800' },
-        { name: 'Зелёный', value: 'bg-green-300 text-green-800' },
-        { name: 'Жёлтый', value: 'bg-yellow-300 text-yellow-800' },
-        { name: 'Фиолетовый', value: 'bg-purple-300 text-purple-800' },
-        { name: 'Розовый', value: 'bg-pink-300 text-pink-800' },
-    ];
-
-    // Цвет по категории (если есть) или по индексу
-    const getHabitColor = (habit, index) => {
-        return habitColors[index % habitColors.length].value;
-    };
-
-    document.getElementById('prev-month').addEventListener('click', async () => {
-        currentMonth--;
-        if (currentMonth < 0) {
-            currentMonth = 11;
-            currentYear--;
-        }
-        await renderCalendar(currentYear, currentMonth);
-    });
-
-    document.getElementById('next-month').addEventListener('click', async () => {
-        currentMonth++;
-        if (currentMonth > 11) {
-            currentMonth = 0;
-            currentYear++;
-        }
-        await renderCalendar(currentYear, currentMonth);
-    });
-
-    document.getElementById('today-btn').addEventListener('click', async () => {
-        currentMonth = today.getMonth();
-        currentYear = today.getFullYear();
-        await renderCalendar(currentYear, currentMonth);
-    });
-
-    async function renderCalendar(year, month) {
-    const calendar = document.getElementById('calendar');
-    calendar.innerHTML = '';
-
-    const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-        'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-    document.getElementById('current-month').textContent = `${monthNames[month]} ${year}`;
-
-    const firstDay = new Date(year, month, 1);
-    let startingDay = firstDay.getDay(); // 0 (вс) - 6 (сб)
-
-    // Смещаем так, чтобы неделя начиналась с Пн
-    startingDay = startingDay === 0 ? 6 : startingDay - 1;
-
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const daysInPrevMonth = new Date(year, month, 0).getDate();
-
-    const totalCells = Math.ceil((daysInMonth + startingDay) / 7) * 7;
-
-    let dayCount = 1;
-    let nextMonthDay = 1;
-
-    for (let i = 0; i < totalCells; i++) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day p-2 border border-gray-100 rounded-lg';
-
-        if (i < startingDay) {
-            const prevDay = daysInPrevMonth - (startingDay - i - 1);
-            dayElement.innerHTML = `<div class="text-right text-gray-300">${prevDay}</div>`;
-            dayElement.classList.add('bg-gray-50');
-        } else if (dayCount > daysInMonth) {
-            dayElement.innerHTML = `<div class="text-right text-gray-300">${nextMonthDay}</div>`;
-            dayElement.classList.add('bg-gray-50');
-            nextMonthDay++;
-        } else {
-            const currentDate = new Date(year, month, dayCount);
-            const isToday = isSameDay(currentDate, today);
-            const habits = await fetchHabitsForDate(currentDate);
-
-            const habitIndicators = habits.map((habit, index) =>
-                `<span class="habit-indicator w-3 h-3 rounded-full mr-0.5 ${getHabitColor(habit, index)}" title="${habit.name}"></span>`
-            ).join('');
-
-            dayElement.innerHTML = `
-                <div class="flex justify-between items-start">
-                    <div class="text-right ${isToday ? 'font-bold text-[#FF6B00]' : ''}">${dayCount}</div>
-                    ${isToday ? '<div class="w-3 h-3 border-2 border-[#FF6B00] rounded-sm"></div>' : ''}
-                </div>
-                <div class="mt-1 flex flex-wrap justify-center">${habitIndicators}</div>
-            `;
-
-            dayElement.addEventListener('click', () => {
-                showDayDetails(currentDate, habits);
-            });
-
-            if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
-                dayElement.classList.add('bg-gray-50');
+        document.getElementById('prev-month').addEventListener('click', async () => {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
             }
-
-            dayCount++;
-        }
-
-        calendar.appendChild(dayElement);
-    }
-}
-
-
-    async function fetchHabitsForDate(date) {
-        try {
-            const response = await fetch(`/api/habits/by-date/?date=${date.toISOString().split('T')[0]}`);
-            if (!response.ok) return [];
-            return await response.json();
-        } catch (error) {
-            console.error('Ошибка загрузки привычек:', error);
-            return [];
-        }
-    }
-
-    function showDayDetails(date, habits) {
-        const monthNames = ['Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня',
-            'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря'];
-        const dayOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
-
-        const modal = document.createElement('div');
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-        modal.innerHTML = `
-            <div class="bg-white rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-semibold">
-                        ${dayOfWeek[(date.getDay() + 6) % 7]  // Пн = 0
-}, ${date.getDate()} ${monthNames[date.getMonth()]}
-                    </h3>
-                    <button class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="space-y-3">
-                    ${habits.length > 0 ? habits.map((habit, index) => `
-                        <div class="p-3 border border-gray-200 rounded-lg">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <span class="w-3 h-3 rounded-full mr-2 ${getHabitColor(habit, index)}"></span>
-                                    <span class="font-medium">${habit.name}</span>
-                                </div>
-                            </div>
-                            ${habit.description ? `<p class="text-sm text-gray-600 mt-1">${habit.description}</p>` : ''}
-                        </div>
-                    `).join('') : '<p class="text-gray-500 text-center py-4">Нет привычек на этот день</p>'}
-                </div>
-            </div>
-        `;
-
-        modal.querySelector('button').addEventListener('click', () => {
-            modal.remove();
+            await renderCalendar(currentYear, currentMonth);
         });
 
-        document.body.appendChild(modal);
-    }
+        document.getElementById('next-month').addEventListener('click', async () => {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            await renderCalendar(currentYear, currentMonth);
+        });
 
-    function isSameDay(d1, d2) {
-        return d1.getDate() === d2.getDate() &&
-               d1.getMonth() === d2.getMonth() &&
-               d1.getFullYear() === d2.getFullYear();
-    }
+        document.getElementById('today-btn').addEventListener('click', async () => {
+            currentMonth = today.getMonth();
+            currentYear = today.getFullYear();
+            await renderCalendar(currentYear, currentMonth);
+        });
 
-    (async () => {
-        await renderCalendar(currentYear, currentMonth);
-    })();
-});
+        async function renderCalendar(year, month) {
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = '';
+            totalHabitsThisMonth = 0;
 
+            const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+                'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+            document.getElementById('current-month').textContent = `${monthNames[month]} ${year}`;
+
+            const firstDay = new Date(year, month, 1);
+            let startingDay = firstDay.getDay(); // 0 (вс) - 6 (сб)
+
+            // Смещаем так, чтобы неделя начиналась с Пн
+            startingDay = startingDay === 0 ? 6 : startingDay - 1;
+
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+            const totalCells = Math.ceil((daysInMonth + startingDay) / 7) * 7;
+
+            let dayCount = 1;
+            let nextMonthDay = 1;
+
+            for (let i = 0; i < totalCells; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day p-3 border-2 border-gray-100 bg-white';
+
+                if (i < startingDay) {
+                    const prevDay = daysInPrevMonth - (startingDay - i - 1);
+                    dayElement.innerHTML = `<div class="text-right text-gray-300">${prevDay}</div>`;
+                    dayElement.classList.add('bg-gray-50', 'opacity-60');
+                } else if (dayCount > daysInMonth) {
+                    dayElement.innerHTML = `<div class="text-right text-gray-300">${nextMonthDay}</div>`;
+                    dayElement.classList.add('bg-gray-50', 'opacity-60');
+                    nextMonthDay++;
+                } else {
+                    const currentDate = new Date(year, month, dayCount);
+                    const isToday = isSameDay(currentDate, today);
+                    const habits = await fetchHabitsForDate(currentDate);
+
+                    totalHabitsThisMonth += habits.length;
+
+                    const habitIndicators = habits.map(habit =>
+                        `<span class="habit-indicator ${habit.color_class}" title="${habit.name}"></span>`
+                    ).join('');
+
+                    dayElement.innerHTML = `
+                        <div class="flex flex-col h-full">
+                            <div class="flex justify-between items-start">
+                                <div class="text-right text-lg font-medium ${
+                                    isToday ? 'today-highlight w-8 h-8 flex items-center justify-center rounded-full mx-auto' : 'text-gray-700'
+                                }">
+                                    ${dayCount}
+                                </div>
+                            </div>
+                            <div class="mt-2 flex flex-wrap gap-1.5 justify-center">${habitIndicators}</div>
+                            ${
+                                habits.length > 0 ?
+                                `<div class="mt-auto text-xs text-center text-gray-500 pt-2">${habits.length} привычки</div>` :
+                                ''
+                            }
+                        </div>
+                    `;
+
+                    dayElement.addEventListener('click', () => {
+                        showDayDetails(currentDate, habits);
+                    });
+
+                    if (currentDate.getDay() === 0 || currentDate.getDay() === 6) {
+                        dayElement.classList.add('weekend-day');
+                    }
+
+                    if (habits.length > 0) {
+                        dayElement.classList.add('hover:border-[#FF6B00]', 'hover:bg-orange-50');
+                    } else {
+                        dayElement.classList.add('hover:border-orange-200');
+                    }
+
+                    dayCount++;
+                }
+
+                calendar.appendChild(dayElement);
+            }
+
+            // Обновляем статистику месяца
+            document.getElementById('month-stats').textContent = `Всего привычек: ${totalHabitsThisMonth}`;
+        }
+
+        async function fetchHabitsForDate(date) {
+            try {
+                const dateStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+                const response = await fetch(`/api/habits/by-date/?date=${dateStr}`);
+                if (!response.ok) return [];
+                const habits = await response.json();
+                return habits.map(habit => ({
+                    ...habit,
+                    color_class: habit.color_class || 'bg-gray-300 text-gray-800'
+                }));
+            } catch (error) {
+                console.error('Ошибка загрузки привычек:', error);
+                return [];
+            }
+        }
+
+        function showDayDetails(date, habits) {
+            const monthNames = ['Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня',
+                'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря'];
+            const dayOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto" style="box-shadow: 0 10px 25px -5px rgba(255, 107, 0, 0.2)">
+                    <div class="flex justify-between items-center mb-4 pb-2 border-b border-orange-100">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            ${dayOfWeek[date.getDay()]}, ${date.getDate()} ${monthNames[date.getMonth()]}
+                        </h3>
+                        <button class="text-gray-500 hover:text-[#FF6B00] transition-colors">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        ${habits.length > 0 ? habits.map(habit => `
+                            <div class="p-4 rounded-xl ${habit.color_class} border border-transparent hover:border-orange-300 transition-all">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <span class="font-semibold">${habit.name}</span>
+                                    </div>
+                                    <span class="text-xs px-2 py-1 rounded ${habit.color_class.replace('bg-', 'bg-opacity-30 ')}">
+                                        ${getCategoryName(habit.category)}
+                                    </span>
+                                </div>
+                                ${habit.description ? `<p class="text-sm mt-2">${habit.description}</p>` : ''}
+                                <div class="mt-3 flex justify-end">
+                                    <span class="text-xs text-gray-600">${formatTime(habit.created_at)}</span>
+                                </div>
+                            </div>
+                        `).join('') : `
+                            <div class="text-center py-6">
+                                <i class="fas fa-calendar-day text-3xl text-gray-300 mb-2"></i>
+                                <p class="text-gray-500">Нет привычек на этот день</p>
+                                <a href="/habits/" class="mt-3 text-[#FF6B00] hover:text-[#E05A00] text-sm font-medium inline-block">
+                                    <i class="fas fa-plus mr-1"></i>Добавить привычку
+                                </a>
+
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+
+            modal.querySelector('button').addEventListener('click', () => {
+                modal.remove();
+            });
+
+            document.body.appendChild(modal);
+        }
+
+        function formatTime(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+
+        function getCategoryName(categoryKey) {
+            const categories = {
+                'health': 'Здоровье',
+                'productivity': 'Продуктивность',
+                'learning': 'Обучение',
+                'relationships': 'Отношения',
+                'finance': 'Финансы'
+            };
+            return categories[categoryKey] || categoryKey;
+        }
+
+        function isSameDay(d1, d2) {
+            return d1.getDate() === d2.getDate() &&
+                   d1.getMonth() === d2.getMonth() &&
+                   d1.getFullYear() === d2.getFullYear();
+        }
+
+        (async () => {
+            await renderCalendar(currentYear, currentMonth);
+        })();
+    });
     </script>
 {% endblock %}
