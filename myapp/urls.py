@@ -41,6 +41,6 @@ urlpatterns = [
     path('habits/delete/<int:id>/', views.delete_habit, name='delete_habit'),
     path('habits/update/<int:id>/', views.update_habit, name='update_habit'),
     path('habits/get/<int:id>/', views.get_habit, name='get_habit'),
-    path('toggle-completion/<int:habit_id>/', views.toggle_completion, name='toggle_completion'),
+    path('api/toggle-completion/<int:habit_id>/', views.toggle_completion, name='toggle_completion'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

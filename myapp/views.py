@@ -151,29 +151,30 @@ def get_all_habits(request):
 @require_GET
 def get_habits_by_day(request):
     day = request.GET.get('day')
+    date_str = request.GET.get('date')
 
     if not day:
         return JsonResponse({'success': False, 'error': 'Day parameter is required'})
 
-    day = int(day)
+    try:
+        day = int(day)
+    except ValueError:
+        return JsonResponse({'success': False, 'error': 'Invalid day format'})
 
-    # Получаем привычки, которые нужно выполнить в этот день недели
+    try:
+        selected_date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else timezone.now().date()
+    except ValueError:
+        return JsonResponse({'success': False, 'error': 'Invalid date format'})
+
     habits = Habit.objects.filter(
         user=request.user,
         schedule__day_of_week=day
     ).distinct().prefetch_related('schedule')
 
-    # Получаем текущую дату
-    today = timezone.now().date()
-
-    # Смотрим, была ли привычка выполнена в этот день
     habits_data = []
     for habit in habits:
-        habit_data = serialize_habit(habit, date=today)
-
-        # Добавляем информацию о выполнении привычки для текущего дня
-        habit_data['is_completed_today'] = habit.is_completed_on(today)
-
+        habit_data = serialize_habit(habit, date=selected_date)
+        habit_data['is_completed_today'] = habit.is_completed_on(selected_date)
         habits_data.append(habit_data)
 
     return JsonResponse({'success': True, 'habits': habits_data})
@@ -713,30 +714,38 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+from django.utils import timezone
+
 @require_POST
 @login_required
 def toggle_completion(request, habit_id):
     try:
         habit = Habit.objects.get(id=habit_id, user=request.user)
+
+        date_str = request.POST.get('date')
+        if not date_str:
+            return JsonResponse({'success': False, 'error': 'Missing date parameter'})
+
+        try:
+            selected_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return JsonResponse({'success': False, 'error': 'Invalid date format'})
+
         today = timezone.now().date()
-        day_of_week = today.weekday()
 
-        logger.info(f"Попытка переключить выполнение привычки с ID {habit_id} на {today}, день недели: {day_of_week}")
+        # Проверка, чтобы дата не была в будущем
+        if selected_date > today:
+            return JsonResponse({'success': False, 'error': 'Cannot mark habit for a future date'})
 
-        # Проверяем, запланирована ли привычка на один из доступных дней
-        allowed_days = [d for d in range(day_of_week + 1)]  # Дни от понедельника до сегодня
+        day_of_week = selected_date.weekday()
 
-        if not habit.schedule.filter(day_of_week__in=allowed_days).exists():
-            logger.warning(f"Привычка с ID {habit_id} не запланирована на допустимые дни {allowed_days}")
-            return JsonResponse({
-                'success': False,
-                'error': 'Habit is not scheduled for the allowed days'
-            })
+        # Проверка, что привычка запланирована на этот день недели
+        if not habit.schedule.filter(day_of_week=day_of_week).exists():
+            return JsonResponse({'success': False, 'error': 'Habit is not scheduled for this day'})
 
-        # Получаем или создаем отметку выполнения
         completion, created = HabitCompletion.objects.get_or_create(
             habit=habit,
-            date=today,
+            date=selected_date,
             defaults={'completed': True}
         )
 
@@ -745,8 +754,6 @@ def toggle_completion(request, habit_id):
             completed = False
         else:
             completed = True
-
-        logger.info(f"Статус выполнения привычки с ID {habit_id}: {completed}")
 
         return JsonResponse({
             'success': True,
@@ -757,17 +764,9 @@ def toggle_completion(request, habit_id):
         })
 
     except Habit.DoesNotExist:
-        logger.error(f"Привычка с ID {habit_id} не найдена")
-        return JsonResponse({
-            'success': False,
-            'error': 'Habit not found'
-        })
+        return JsonResponse({'success': False, 'error': 'Habit not found'})
     except Exception as e:
-        logger.error(f"Ошибка при переключении выполнения привычки с ID {habit_id}: {str(e)}")
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        })
+        return JsonResponse({'success': False, 'error': str(e)})
 
 #страница трекера привычек
 @login_required
