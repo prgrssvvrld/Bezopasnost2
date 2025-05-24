@@ -42,30 +42,35 @@
     border-radius: 8px;
     font-size: 1rem;
     transition: border-color 0.2s;
+    background-color: var(--bg-secondary);
+    color: var(--text);
 }
 
+.settings-form input:hover,
 .settings-form input:focus {
-    outline: none;
-    border-color: #4299e1;
-    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+        border: 1px solid #ff6b00;
+        outline: none;
 }
 
 .save-button {
     background-color: #ff6b00;
     color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
     border: none;
-    padding: 10px 20px;
-    font-weight: 500;
     border-radius: var(--borderRadius);
-    transition: background-color 0.3s ease;
-    text-decoration: none;
-    display: inline-block;
-    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
     cursor: pointer;
+    transition: var(--transition);
 }
 
 .save-button:hover {
     background-color: #ff7b00;
+    transform: translateY(-1px);
 }
 
 hr {

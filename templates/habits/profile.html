@@ -52,15 +52,4 @@
     </a>
 </div>
 
-<!-- Иконка пользователя -->
-<div class="user-icon">
-    <a href="{% url 'profile' %}">
-        {% if request.user.profile_picture %}
-            <img src="{{ request.user.profile_picture.url }}" alt="Profile">
-        {% else %}
-            <i data-feather="user"></i>
-        {% endif %}
-    </a>
-</div>
-
 {% endblock %}

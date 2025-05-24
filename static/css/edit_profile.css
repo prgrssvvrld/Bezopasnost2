@@ -107,6 +107,12 @@
         outline: none;
     }
 
+    .btn-secondary {
+        color: #ff6b00;
+        text-decoration: none;
+        transition: color 0.3s ease, text-decoration 0.3s ease;
+    }
+
     .btn-secondary:hover {
         color: #ff6b00;
         text-decoration: underline;

@@ -7,6 +7,13 @@
     box-shadow: var(--shadow);
 }
 
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    transition: var(--transition);
+}
+
 .calendar-header {
     display: flex;
     justify-content: space-between;
@@ -38,10 +45,6 @@
     padding: 5px;
     border: 1px solid #e2e8f0;
     position: relative;
-}
-
-.calendar-table td.empty {
-    background-color: #f8fafc;
 }
 
 .calendar-table td.day {

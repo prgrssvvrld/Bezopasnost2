@@ -1,13 +1,15 @@
+<title>Часто задаваемые вопросы</title>
 {% extends 'habits/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/faq.css' %}">
+{% endblock %}
+<h1>{% block header %}FAQ{% endblock %}</h1>
 
 {% block content %}
-<div class="header">
-    <div class="header-content">
-        <h1>Часто задаваемые вопросы</h1>
-    </div>
-</div>
-{% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/faq.css' %}">
+
+<h1>Часто задаваемые вопросы</h1>
 <div class="container faq-container">
     {% for item in faq_items %}
     <div class="faq-item">

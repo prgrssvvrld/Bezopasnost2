@@ -40,15 +40,7 @@
                     </div>
                 {% endif %}
             </div>
-            <div class="user-icon">
-        <a href="{% url 'profile' %}">
-            {% if request.user.profile_picture %}
-                <img src="{{ request.user.profile_picture.url }}" alt="Profile">
-            {% else %}
-                <i data-feather="user"></i>
-            {% endif %}
-        </a>
-            </div>
+
             <div class="file-input-wrapper">
                 <label for="id_profile_picture" class="btn btn-secondary">
                     <i class="fas fa-upload"></i> Выбрать новое фото

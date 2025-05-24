@@ -29,9 +29,9 @@
     <div class="user-icon">
         <a href="{% url 'profile' %}">
             {% if request.user.profile_picture %}
-                <img src="{{ request.user.profile_picture.url }}" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                <img src="{{ request.user.profile_picture.url }}" alt="Profile">
             {% else %}
-                <i data-feather="user"></i>
+                <i class="fas fa-user"></i>
             {% endif %}
         </a>
     </div>
@@ -79,7 +79,6 @@
 
     <div class="header">
         <div class="header-content">
-
             <h1>{% block header %}Мои привычки{% endblock %}</h1>
         </div>
     </div>

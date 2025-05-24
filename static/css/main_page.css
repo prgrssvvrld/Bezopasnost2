@@ -70,36 +70,66 @@ select.form-select, input.form-input, textarea.form-textarea {
             padding: 0;
             transition: var(--transition);
         }
+.dark-mode .bg-white {
+    background-color: var(--bg-secondary) !important;
+}
+
+.dark-mode .text-xl {
+    color: var(--text) !important;
+}
 
 
+
+.dark-mode .font-semibold {
+    color: var(--text) !important;
+}
+
+.dark-mode #week-calendar {
+    color: var(--text);
+}
+
+.dark-mode #week-calendar .day {
+    color: var(--text);
+}
+
+.dark-mode #week-calendar .day.selected {
+    color: white;
+}
+
+.dark-mode #habits-list,
+.dark-mode #all-habits-list {
+    color: var(--text);
+}
+
+.dark-mode .divide-y > :not([hidden]) ~ :not([hidden]) {
+    border-color: rgba(255, 255, 255, 0.1);
+}
         .user-icon {
             position: absolute;
             top: calc(var(--spacer) * 2);
             right: calc(var(--spacer) * 2);
             width: calc(var(--linkHeight) * 0.8);
             height: calc(var(--linkHeight) * 0.8);
+            background: var(--bg-nav);
             border-radius: 50%;
-            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: var(--bg-nav);
             box-shadow: var(--shadow);
             z-index: 1001;
             transition: var(--transition);
         }
 
-        .user-icon a {
-            display: flex;
-            width: 100%;
-            height: 100%;
-            align-items: center;
-            justify-content: center;
+        .user-icon i {
+            font-size: 1.3em;
+            color: var(--text);
         }
+
         .user-icon img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            border-radius: 50%;
         }
 
         /* Collapsible navbar */

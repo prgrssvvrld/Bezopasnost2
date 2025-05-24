@@ -12,7 +12,14 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     background: #fff;
 }
-
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg);
+    color: black;
+    margin: 0;
+    padding: 0;
+    transition: var(--transition);
+}
 .faq-question {
     padding: 15px 20px;
     display: flex;
@@ -56,6 +63,10 @@
     margin-right: 10px;
 }
 
+.fa-chevron-down {
+    color: black;
+}
+
 .badge-health { background-color: #ffebee; color: #c62828; }
 .badge-sport { background-color: #e8f5e9; color: #2e7d32; }
 .badge-study { background-color: #e3f2fd; color: #1565c0; }
@@ -93,7 +104,7 @@
             object-fit: cover;
         }
 
-.header {
+.faq-header {
     background: linear-gradient(135deg, var(--accent), var(--accent-hover));
     padding: 2rem 1.5rem;
     border-radius: var(--borderRadius);
@@ -104,7 +115,7 @@
     max-width: 800px;
 }
 
-.header h1 {
+.faq-header h1 {
     display: flex;
     margin: 0;
     font-size: 2rem;

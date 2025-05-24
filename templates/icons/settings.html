@@ -1,10 +1,11 @@
+<title>Настройки</title>
 {% extends "habits/base.html" %}
 {% load static %}
 
 {% block extra_css %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/settings.css' %}">
 {% endblock %}
-
+<h1>{% block header %}Настройки{% endblock %}</h1>
 {% block content %}
 <div class="settings-container">
     <h2>Настройки аккаунта</h2>
@@ -61,7 +62,9 @@
         </div>
     </div>
 
-    <button type="submit" class="save-button">Сменить пароль</button>
+    <button type="submit" class="save-button">
+            <i class="fas fa-save"></i>Сменить пароль
+    </button>
 </form>
 
     {% if messages %}
@@ -71,16 +74,6 @@
             {% endfor %}
         </ul>
     {% endif %}
-
-    <div class="user-icon">
-    <a href="{% url 'profile' %}">
-        {% if request.user.profile_picture %}
-            <img src="{{ request.user.profile_picture.url }}" alt="Profile">
-        {% else %}
-            <i data-feather="user"></i>
-        {% endif %}
-    </a>
-</div>
 
 </div>
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
