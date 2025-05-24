@@ -483,6 +483,7 @@ function saveHabit() {
             }
 
             closeModal();
+            updateHabitsList();
         } else {
             console.error('Ошибка сохранения:', data.error);
         }
@@ -528,49 +529,53 @@ function saveHabit() {
     loadAllHabits();
 
     // Функция для отправки состояния выполнения привычки
-function toggleHabitCompletion(habitId, formElement, date = null) {
-    const button = formElement.querySelector('button');
-    const progressText = formElement.closest('.flex.flex-col').querySelector('.progress-text');
-    const progressBar = formElement.closest('.flex.flex-col').querySelector('.progress-bar-fill');
-    const selectedDate = document.getElementById('selected-date')?.value || new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+function toggleHabitCompletion(habitId, date) {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    button.disabled = true;
-    button.textContent = '...';
-
-    fetch(`/api/toggle-completion/${habitId}/`, {
+    fetch(`/habits/${habitId}/toggle_completion/`, {
         method: 'POST',
-    headers: {
-        'X-CSRFToken': getCSRFToken(),
-        'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: `date=${encodeURIComponent(selectedDate)}`  // 👈 передаём дату<-- дата может быть null (сегодня) или задана вручную
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
+        },
+        body: `date=${date}`
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            button.disabled = false;
-            button.textContent = data.completed ? '✓ Выполнено' : 'Отметить';
-            button.className = data.completed
-                ? 'bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full transition'
-                : 'bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full transition';
+            // Обновляем только нужные элементы на странице без перезагрузки
+            const habitElement = document.querySelector(`.habit[data-habit-id="${habitId}"]`);
+            if (habitElement) {
+                // Обновляем статус выполнения
+                const completionElement = habitElement.querySelector('.completion-status');
+                if (completionElement) {
+                    completionElement.textContent = data.completed ? '✓' : '✗';
+                    completionElement.className = `completion-status ${data.completed ? 'completed' : 'not-completed'}`;
+                }
 
-            if (data.completion_rate !== undefined) {
-                progressText.textContent = `Прогресс: ${data.completion_rate}%`;
-                progressBar.style.width = `${data.completion_rate}%`;
+                // Обновляем статистику
+                const completionRateElement = habitElement.querySelector('.completion-rate');
+                if (completionRateElement) {
+                    completionRateElement.textContent = `Выполнение: ${data.completion_rate}%`;
+                }
+
+                const currentStreakElement = habitElement.querySelector('.current-streak');
+                if (currentStreakElement) {
+                    currentStreakElement.textContent = `Текущая серия: ${data.current_streak} дней`;
+                }
+
+                const longestStreakElement = habitElement.querySelector('.longest-streak');
+                if (longestStreakElement) {
+                    longestStreakElement.textContent = `Рекордная серия: ${data.longest_streak} дней`;
+                }
             }
-
-            showNotification(data.completed ? "Привычка выполнена!" : "Привычка отменена!");
         } else {
-            showNotification(data.error || 'Ошибка при отметке привычки');
-            button.disabled = false;
-            button.textContent = data.completed ? '✓ Выполнено' : 'Отметить';
+            alert(data.error || 'Произошла ошибка');
         }
     })
     .catch(error => {
-        console.error('Ошибка:', error);
-        showNotification('Произошла ошибка при отметке привычки.');
-        button.disabled = false;
-        button.textContent = 'Отметить';
+        console.error('Error:', error);
+        alert('Произошла ошибка при обновлении статуса привычки');
     });
 }
 

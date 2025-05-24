@@ -66,7 +66,7 @@ def verify_code(request):
                 messages.error(request, 'Срок действия кода истёк. Запросите новый.')
                 return redirect('sign_up')
 
-            user.is_verified = True
+            user.is_user_verified = True
             user.is_active = True
             user.save()
 
@@ -101,10 +101,10 @@ def home_page(request):
 
     return render(request, 'habits/home.html', context)
 
-def toggle_habit(request, habit_id):
-    habit = get_object_or_404(Habit, id=habit_id, user=request.user)
-    habit.toggle_completion()
-    return JsonResponse({'success': True})
+# def toggle_habit(request, habit_id):
+#     habit = get_object_or_404(Habit, id=habit_id, user=request.user)
+#     habit.toggle_completion()
+#     return JsonResponse({'success': True})
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -908,7 +908,6 @@ def habits_by_date(request):
 
     weekday = target_date.weekday()  # 0 = Пн … 6 = Вс
 
-    # Шаг 1: отбираем привычки для нужного дня недели и <= target_date
     habits_qs = (
         Habit.objects
         .filter(
@@ -924,7 +923,6 @@ def habits_by_date(request):
     for habit in habits_qs:
         scheduled_days = list(habit.schedule.values_list('day_of_week', flat=True))
 
-        # Шаг 2: считаем только даты, которые попадают под расписание и <= target_date
         passed = 0
         current = habit.created_at.date()
 
@@ -933,8 +931,7 @@ def habits_by_date(request):
                 passed += 1
             current += timedelta(days=1)
 
-        # Шаг 3: Если не превысили лимит — добавляем
-        if passed <= habit.days_goal:
+        if passed <= habit.days_goal or target_date == habit.created_at.date():
             results.append({
                 'id': habit.id,
                 'name': habit.name,
@@ -942,7 +939,10 @@ def habits_by_date(request):
                 'description': habit.description,
                 'completed': habit.is_completed_on(target_date),
                 'schedule_days': list(habit.schedule.values_list('day_of_week', flat=True)),
-                'date': target_date.isoformat(),  # ✅ ДОБАВИ ЭТО
+                'date': target_date.isoformat(),
+                'completion_rate': habit.get_completion_rate(),
+                'current_streak': habit.get_current_streak(),
+                'longest_streak': habit.get_longest_streak()
             })
 
     return JsonResponse(results, safe=False)

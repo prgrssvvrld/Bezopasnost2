@@ -13,7 +13,7 @@ urlpatterns = [
     path('dashboard/add/', views.add_habit, name='add_habit'),
     path('home/', views.home_page, name='home'),
 
-    path('habits/<int:habit_id>/toggle/', views.toggle_habit, name='toggle_habit'),
+    # path('habits/<int:habit_id>/toggle/', views.toggle_habit, name='toggle_habit'),
 
     #path('dashboard/<int:habit_id>/edit/', views.edit_habit, name='edit_habit'),
     #path('dashboard/<int:habit_id>/delete/', views.delete_habit, name='delete_habit'),
