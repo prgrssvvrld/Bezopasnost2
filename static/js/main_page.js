@@ -64,7 +64,7 @@ function getCSRFToken() {
             day.setDate(monday.getDate() + i);
 
             const dayElement = document.createElement('div');
-            dayElement.className = `flex flex-col items-center p-2 rounded-lg cursor-pointer transition ${isSameDay(day, selectedDate) ? 'bg-[rgba(255,107,0,0.1)] text-[rgba(255,107,0,1)]' : 'hover:bg-gray-100'}`;
+            dayElement.className = `flex flex-col items-center p-2 rounded-lg cursor-pointer transition ${isSameDay(day, selectedDate) ? 'bg-[rgba(255,107,0,0.1)] text-[rgba(255,107,0,1)]' : 'hover:bg-gray-100 dark:hover:bg-gray-400'}`;
             dayElement.onclick = () => {
                 selectedDate = new Date(day);  // ✅ сохраняем выбранную дату
                 currentSelectedDay = (day.getDay() + 6) % 7;  // ✅ используем выбранный день недели
@@ -346,7 +346,7 @@ const completionSection = showCompletion ? `
 
         habitColors.forEach(color => {
             const colorElement = document.createElement('div');
-            colorElement.className = `flex items-center space-x-2 p-2 rounded-lg cursor-pointer hover:bg-gray-100`;
+            colorElement.className = `flex items-center space-x-2 p-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-400`;
             colorElement.onclick = () => selectColor(color.value);
 
             colorElement.innerHTML = `
