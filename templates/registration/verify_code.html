@@ -10,7 +10,7 @@
     <div class="background"></div>
     <div class="balloons"></div>
 
-    <form method="post">
+    <form method="post" id="verify-form">
         {% csrf_token %}
         <h2>Подтверждение почты</h2>
 
@@ -21,9 +21,11 @@
 
         <label for="verification_code">Код подтверждения:</label>
         <input type="text" name="verification_code" id="verification_code" required
-               placeholder="Введите 6-значный код">
+               placeholder="Введите 6-значный код" {% if is_blocked %}disabled{% endif %}>
 
-        <button type="submit">Подтвердить</button>
+        <button type="submit" id="submit-btn" {% if is_blocked %}disabled{% endif %}>
+            {% if is_blocked %}Повторить через <span id="countdown">{{ delay }}</span> сек{% else %}Подтвердить{% endif %}
+        </button>
 
         {% if messages %}
             <div class="alert alert-error">
@@ -33,5 +35,25 @@
             </div>
         {% endif %}
     </form>
+
+    <script>
+    // Таймер обратного отсчета при блокировке
+    {% if is_blocked %}
+    let seconds = {{ delay }};
+    const countdownElement = document.getElementById('countdown');
+
+    const countdownInterval = setInterval(() => {
+        seconds--;
+        countdownElement.textContent = seconds;
+
+        if (seconds <= 0) {
+            clearInterval(countdownInterval);
+            document.getElementById('verification_code').disabled = false;
+            document.getElementById('submit-btn').disabled = false;
+            document.getElementById('submit-btn').innerHTML = 'Подтвердить';
+        }
+    }, 1000);
+    {% endif %}
+    </script>
 </body>
 </html>

@@ -45,7 +45,9 @@ from datetime import timedelta
 import json
 from django.utils import timezone
 from datetime import timedelta
-
+from django.core.cache import cache
+import time
+from datetime import timedelta
 User = get_user_model()
 
 
@@ -57,11 +59,29 @@ def verify_code(request):
     if request.method == 'POST':
         code = request.POST.get('verification_code')
         email = request.POST.get('email')
+        cache_key = f"verify_failures_{email}"
+
+        # Получаем количество неудачных попыток и время последней попытки
+        failures_data = cache.get(cache_key, {'count': 0, 'last_attempt': None})
+        failures = failures_data['count']
+
+        # Рассчитываем задержку: начальная 10 сек, увеличивается на 10 сек за каждую попытку (макс 120 сек)
+        delay = min(10 + (failures * 10), 120)
+
+        # Проверяем, нужно ли применять задержку
+        last_attempt = failures_data['last_attempt']
+        if last_attempt and (timezone.now() - last_attempt) < timedelta(seconds=delay):
+            remaining = delay - (timezone.now() - last_attempt).seconds
+            messages.error(request, f'Пожалуйста, подождите {remaining} секунд перед следующей попыткой')
+            return render(request, 'registration/verify_code.html', {
+                'is_blocked': True,
+                'delay': remaining,
+                'email': email
+            })
 
         try:
             user = CustomUser.objects.get(email=email, verification_code=code)
 
-            # Проверка срока действия кода (например, 10 минут)
             if (timezone.now() - user.verification_code_created_at) > timedelta(minutes=10):
                 messages.error(request, 'Срок действия кода истёк. Запросите новый.')
                 return redirect('sign_up')
@@ -70,14 +90,30 @@ def verify_code(request):
             user.is_active = True
             user.save()
 
+            # Сброс счетчика при успешном подтверждении
+            cache.delete(cache_key)
             login(request, user)
             messages.success(request, 'Почта успешно подтверждена!')
             return redirect('home')
 
         except CustomUser.DoesNotExist:
-            messages.error(request, 'Неверный код подтверждения')
+            # Увеличиваем счетчик неудачных попыток и обновляем время последней попытки
+            cache.set(cache_key, {
+                'count': failures + 1,
+                'last_attempt': timezone.now()
+            }, timeout=3600)  # Храним 1 час
 
-    return render(request, 'registration/verify_code.html')
+            # Применяем задержку для следующей попытки
+            messages.error(request, f'Неверный код. Следующая попытка будет доступна через {delay} секунд.')
+            return render(request, 'registration/verify_code.html', {
+                'is_blocked': True,
+                'delay': delay,
+                'email': email
+            })
+
+    return render(request, 'registration/verify_code.html', {
+        'email': request.GET.get('email')
+    })
 def home_page(request):
     user = request.user
     today = timezone.now().date()
@@ -365,26 +401,47 @@ def custom_logout(request):
 def custom_login(request):
     if request.method == 'POST':
         username = request.POST['username']
+        cache_key = f"login_failures_{username}"
+
+        # Получаем количество неудачных попыток и время последней попытки
+        failures_data = cache.get(cache_key, {'count': 0, 'last_attempt': None})
+        failures = failures_data['count']
+
+        # Рассчитываем задержку: начальная 5 сек, увеличивается на 5 сек за каждую попытку (макс 60 сек)
+        delay = min(5 + (failures * 5), 60)
+
+        # Проверяем, нужно ли применять задержку
+        last_attempt = failures_data['last_attempt']
+        if last_attempt and (timezone.now() - last_attempt) < timedelta(seconds=delay):
+            remaining = delay - (timezone.now() - last_attempt).seconds
+            messages.error(request, f'Пожалуйста, подождите {remaining} секунд перед следующей попыткой')
+            return render(request, 'registration/login.html', {
+                'is_blocked': True,
+                'delay': remaining
+            })
+
         password = request.POST['password']
-
-        # Проверяем, были ли недавние попытки входа
-        last_failed_attempt = request.session.get('last_failed_attempt')
-        if last_failed_attempt:
-            elapsed = timezone.now().timestamp() - float(last_failed_attempt)
-            if elapsed < 5:  # 5 секунд таймаут
-                remaining_time = 5 - int(elapsed)
-                messages.error(request, f'Пожалуйста, подождите {remaining_time} секунд перед следующей попыткой')
-                return render(request, 'registration/login.html')
-
         user = authenticate(request, username=username, password=password)
+
         if user is not None:
+            # Сброс счетчика при успешном входе
+            cache.delete(cache_key)
             login(request, user)
             return redirect('home')
         else:
-            # Сохраняем время неудачной попытки
-            request.session['last_failed_attempt'] = timezone.now().timestamp()
-            messages.error(request, 'Неверное имя пользователя или пароль')
-            return render(request, 'registration/login.html')
+            # Увеличиваем счетчик неудачных попыток и обновляем время последней попытки
+            cache.set(cache_key, {
+                'count': failures + 1,
+                'last_attempt': timezone.now()
+            }, timeout=3600)  # Храним 1 час
+
+            # Применяем задержку для следующей попытки
+            messages.error(request, f'Неверные данные. Следующая попытка будет доступна через {delay} секунд.')
+            return render(request, 'registration/login.html', {
+                'is_blocked': True,
+                'delay': delay
+            })
+
     return render(request, 'registration/login.html')
 
 
